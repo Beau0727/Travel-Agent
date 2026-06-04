@@ -1,0 +1,25 @@
+# Dependencies
+node_modules/
+frontend/node_modules/
+
+# Frontend build/cache output
+dist/
+frontend/dist/
+frontend/.vite/
+
+# Local environment files
+.env
+*.local
+frontend/.env
+backend-go/.env
+
+# Backend runtime data
+backend-go/data/trips.json
+backend-go/data/*.db
+backend-go/data/*.sqlite
+backend-go/data/*.sqlite3
+
+# OS/editor noise
+.DS_Store
+Thumbs.db
+.vscode/
