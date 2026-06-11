@@ -3,10 +3,11 @@ package validators
 import "travel-agent-go/internal/domain"
 
 const (
-	CodeBudgetExceeded     = "budget_exceeded"
-	CodeEarlyStartConflict = "early_start_conflict"
-	CodePaceTooPacked      = "pace_too_packed"
-	CodePlaceholderContent = "placeholder_content"
+	CodeBudgetExceeded      = "budget_exceeded"
+	CodeEarlyStartConflict  = "early_start_conflict"
+	CodePaceTooPacked       = "pace_too_packed"
+	CodePlaceholderContent  = "placeholder_content"
+	CodeDestinationMismatch = "destination_mismatch"
 )
 
 // Issue 是校验器发现的问题。
@@ -38,6 +39,7 @@ func NewDefaultSet() *Set {
 		PaceValidator{},
 		PreferenceValidator{},
 		RouteValidator{},
+		DestinationConsistencyValidator{},
 		ContentValidator{},
 	)
 }

@@ -7,6 +7,7 @@ import (
 
 	"travel-agent-go/internal/domain"
 	"travel-agent-go/internal/llm"
+	"travel-agent-go/internal/services"
 )
 
 type ToolName string
@@ -15,6 +16,8 @@ const (
 	ToolRAGSearch              ToolName = "rag_search"
 	ToolWebResearch            ToolName = "web_research"
 	ToolWeatherForecast        ToolName = "weather_forecast"
+	ToolCollectAttractions     ToolName = "collect_attraction_candidates"
+	ToolCollectMeals           ToolName = "collect_meal_candidates"
 	ToolGenerateItineraryDraft ToolName = "generate_itinerary_draft"
 	ToolEnrichMap              ToolName = "enrich_map"
 	ToolEnrichRoutes           ToolName = "enrich_routes"
@@ -88,6 +91,20 @@ func (a GenerateItineraryDraftToolArgs) EffectiveDayCount(defaultDayCount int) i
 	return defaultDayCount
 }
 
+type PlaceCandidateToolArgs struct {
+	Destination string `json:"destination"`
+	Limit       int    `json:"limit"`
+}
+
+func (a *PlaceCandidateToolArgs) Normalize(request domain.TripRequest) {
+	if a.Destination == "" {
+		a.Destination = request.Destination
+	}
+	if a.Limit <= 0 {
+		a.Limit = 24
+	}
+}
+
 type RAGSearchToolResult struct {
 	Count    int      `json:"count"`
 	Contexts []string `json:"contexts"`
@@ -110,6 +127,12 @@ type WebResearchSourceDigest struct {
 type WeatherForecastToolResult struct {
 	Forecast     domain.WeatherForecastResponse `json:"forecast"`
 	ContextAdded bool                           `json:"context_added"`
+}
+
+type PlaceCandidateToolResult struct {
+	Kind       string                    `json:"kind"`
+	Count      int                       `json:"count"`
+	Candidates []services.PlaceCandidate `json:"candidates"`
 }
 
 type GenerateItineraryDraftToolResult struct {

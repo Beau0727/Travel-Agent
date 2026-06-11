@@ -10,6 +10,7 @@ import (
 
 	"travel-agent-go/internal/config"
 	"travel-agent-go/internal/domain"
+	"travel-agent-go/internal/geo"
 	infraamap "travel-agent-go/internal/infrastructure/amap"
 	"travel-agent-go/internal/logging"
 )
@@ -49,6 +50,29 @@ func (t *MapTool) EnrichItinerary(ctx context.Context, itinerary *domain.Itinera
 		"days", len(itinerary.Days),
 	)
 	for dayIndex := range itinerary.Days {
+		if itinerary.Days[dayIndex].Hotel != nil {
+			hotel := itinerary.Days[dayIndex].Hotel
+			lookups++
+			poi, err := t.searchFirstPOI(ctx, hotelSearchKeyword(*hotel, itinerary.Destination), itinerary.Destination)
+			if err != nil || poi == nil {
+				skipped++
+				if err != nil {
+					logging.Warn(ctx, "map tool hotel poi lookup failed",
+						"trip_id", itinerary.TripID,
+						"day", itinerary.Days[dayIndex].DayIndex,
+						"keyword", hotel.Name,
+						"error", err,
+					)
+				}
+			} else {
+				hotel.Address = firstNonEmpty(poi.Address, hotel.Address, hotel.Location)
+				hotel.Adcode = firstNonEmpty(poi.Adcode, hotel.Adcode)
+				hotel.City = firstNonEmpty(poi.City, hotel.City, itinerary.Destination)
+				hotel.Latitude = poi.Latitude
+				hotel.Longitude = poi.Longitude
+				enriched++
+			}
+		}
 		for spotIndex := range itinerary.Days[dayIndex].Spots {
 			spot := &itinerary.Days[dayIndex].Spots[spotIndex]
 			lookups++
@@ -74,6 +98,8 @@ func (t *MapTool) EnrichItinerary(ctx context.Context, itinerary *domain.Itinera
 			spot.Address = firstNonEmpty(poi.Address, spot.Address, spot.Location)
 			spot.ImageURL = firstNonEmpty(poi.ImageURL, spot.ImageURL)
 			spot.POIID = firstNonEmpty(poi.ID, spot.POIID)
+			spot.Adcode = firstNonEmpty(poi.Adcode, spot.Adcode)
+			spot.City = firstNonEmpty(poi.City, spot.City, itinerary.Destination)
 			spot.Latitude = poi.Latitude
 			spot.Longitude = poi.Longitude
 			enriched++
@@ -104,6 +130,8 @@ func (t *MapTool) EnrichItinerary(ctx context.Context, itinerary *domain.Itinera
 			meal.Address = firstNonEmpty(poi.Address, meal.Address, meal.Location)
 			meal.ImageURL = firstNonEmpty(poi.ImageURL, meal.ImageURL)
 			meal.POIID = firstNonEmpty(poi.ID, meal.POIID)
+			meal.Adcode = firstNonEmpty(poi.Adcode, meal.Adcode)
+			meal.City = firstNonEmpty(poi.City, meal.City, itinerary.Destination)
 			meal.Latitude = poi.Latitude
 			meal.Longitude = poi.Longitude
 			enriched++
@@ -123,6 +151,8 @@ type amapPOI struct {
 	ID        string
 	Address   string
 	ImageURL  string
+	City      string
+	Adcode    string
 	Latitude  *float64
 	Longitude *float64
 }
@@ -134,6 +164,7 @@ func (t *MapTool) searchFirstPOI(ctx context.Context, keyword string, city strin
 	params := url.Values{}
 	params.Set("keywords", keyword)
 	params.Set("city", city)
+	params.Set("citylimit", "true")
 	params.Set("offset", "5")
 	params.Set("page", "1")
 	params.Set("extensions", "all")
@@ -175,13 +206,26 @@ func (t *MapTool) searchFirstPOI(ctx context.Context, keyword string, city strin
 		return nil, nil
 	}
 
-	first := bestAmapPOI(payload.POIs)
+	filtered := filterAmapPOIs(payload.POIs, city)
+	if len(filtered) == 0 {
+		logging.Warn(ctx, "amap poi response rejected by city filter",
+			"keyword", keyword,
+			"city", city,
+			"pois", len(payload.POIs),
+			"duration_ms", time.Since(start).Milliseconds(),
+		)
+		return nil, nil
+	}
+
+	first := bestAmapPOI(filtered)
 	lat, lng := splitAmapLocation(first.Location)
 	imageURL := firstAmapPhotoURL(first.Photos)
+	poiCity := firstNonEmpty(stringifyAmapValue(first.CityName), stringifyAmapValue(first.ADName))
 	logging.Info(ctx, "amap poi request completed",
 		"keyword", keyword,
 		"city", city,
 		"pois", len(payload.POIs),
+		"filtered_pois", len(filtered),
 		"poi_id", first.ID,
 		"duration_ms", time.Since(start).Milliseconds(),
 	)
@@ -189,6 +233,8 @@ func (t *MapTool) searchFirstPOI(ctx context.Context, keyword string, city strin
 		ID:        first.ID,
 		Address:   stringifyAmapAddress(first.Address),
 		ImageURL:  imageURL,
+		City:      poiCity,
+		Adcode:    strings.TrimSpace(first.Adcode),
 		Latitude:  lat,
 		Longitude: lng,
 	}, nil
@@ -197,10 +243,33 @@ func (t *MapTool) searchFirstPOI(ctx context.Context, keyword string, city strin
 type amapPOIPayload struct {
 	ID       string `json:"id"`
 	Address  any    `json:"address"`
+	PName    any    `json:"pname"`
+	CityName any    `json:"cityname"`
+	ADName   any    `json:"adname"`
+	Adcode   string `json:"adcode"`
 	Location string `json:"location"`
 	Photos   []struct {
 		URL string `json:"url"`
 	} `json:"photos"`
+}
+
+func filterAmapPOIs(pois []amapPOIPayload, destination string) []amapPOIPayload {
+	if strings.TrimSpace(destination) == "" {
+		return pois
+	}
+	filtered := make([]amapPOIPayload, 0, len(pois))
+	for _, poi := range pois {
+		cityText := strings.Join([]string{
+			stringifyAmapValue(poi.CityName),
+			stringifyAmapValue(poi.ADName),
+			stringifyAmapValue(poi.PName),
+			stringifyAmapAddress(poi.Address),
+		}, " ")
+		if geo.CityMatchesDestination(cityText, destination) || geo.TextMatchesDestination(destination, cityText) {
+			filtered = append(filtered, poi)
+		}
+	}
+	return filtered
 }
 
 func bestAmapPOI(pois []amapPOIPayload) amapPOIPayload {
@@ -253,14 +322,18 @@ func parseFloatPointer(value string) (*float64, bool) {
 }
 
 func stringifyAmapAddress(value any) string {
+	return stringifyAmapValue(value)
+}
+
+func stringifyAmapValue(value any) string {
 	switch typed := value.(type) {
 	case string:
-		return typed
+		return strings.TrimSpace(typed)
 	case []any:
 		parts := make([]string, 0, len(typed))
 		for _, item := range typed {
-			if text, ok := item.(string); ok && text != "" {
-				parts = append(parts, text)
+			if text, ok := item.(string); ok && strings.TrimSpace(text) != "" {
+				parts = append(parts, strings.TrimSpace(text))
 			}
 		}
 		return strings.Join(parts, " ")
@@ -276,4 +349,16 @@ func firstNonEmpty(values ...string) string {
 		}
 	}
 	return ""
+}
+
+func hotelSearchKeyword(hotel domain.HotelItem, destination string) string {
+	name := strings.TrimSpace(hotel.Name)
+	if name != "" && !strings.Contains(name, "默认同住") && !strings.Contains(name, "住宿") {
+		return name
+	}
+	destination = strings.TrimSpace(destination)
+	if destination == "" {
+		return "酒店"
+	}
+	return destination + " 酒店"
 }

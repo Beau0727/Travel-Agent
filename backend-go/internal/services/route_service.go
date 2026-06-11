@@ -167,12 +167,15 @@ func (s *RoutePlanningService) EnrichItineraryRoutes(ctx context.Context, itiner
 func (r RoutePlanResult) ToTransportItem(from, to string) domain.TransportItem {
 	distanceKMValue := math.Round(float64(r.DistanceMeters)/10) / 100
 	minutes := int(math.Round(float64(r.DurationSeconds) / 60))
-	modeLabel := "打车/驾车"
+	modeLabel := "打车/网约车"
 	cost := r.TaxiCost
 	if r.Mode == "walking" {
 		modeLabel = "步行"
 		cost = 0
-	} else if cost <= 0 {
+	} else if r.DistanceMeters > 0 && r.DistanceMeters <= 10000 {
+		modeLabel = "公交/地铁优先，打车备选"
+	}
+	if r.Mode != "walking" && cost <= 0 {
 		cost = estimateTaxiCost(r.DistanceMeters)
 	}
 
@@ -262,28 +265,62 @@ func normalizeAmapRoute(mode string, raw amapRouteResponse) (RoutePlanResult, er
 }
 
 func routePointsFromDay(day domain.DayPlan) []RoutePoint {
-	points := []RoutePoint{}
-	for _, spot := range day.Spots {
-		if spot.Latitude == nil || spot.Longitude == nil {
-			continue
+	lookup := map[string]RoutePoint{}
+	addLookup := func(name string, lat, lng *float64, poiID string) {
+		name = strings.TrimSpace(name)
+		if name == "" || lat == nil || lng == nil {
+			return
 		}
-		points = append(points, RoutePoint{
-			Name:      spot.Name,
-			Latitude:  *spot.Latitude,
-			Longitude: *spot.Longitude,
-			POIID:     spot.POIID,
-		})
+		lookup[name] = RoutePoint{
+			Name:      name,
+			Latitude:  *lat,
+			Longitude: *lng,
+			POIID:     poiID,
+		}
+	}
+	if day.Hotel != nil {
+		addLookup(day.Hotel.Name, day.Hotel.Latitude, day.Hotel.Longitude, "")
+	}
+	for _, spot := range day.Spots {
+		addLookup(spot.Name, spot.Latitude, spot.Longitude, spot.POIID)
 	}
 	for _, meal := range day.Meals {
-		if meal.Latitude == nil || meal.Longitude == nil {
-			continue
+		addLookup(meal.Name, meal.Latitude, meal.Longitude, meal.POIID)
+	}
+
+	points := []RoutePoint{}
+	appendPoint := func(name string) {
+		point, ok := lookup[strings.TrimSpace(name)]
+		if !ok {
+			return
 		}
-		points = append(points, RoutePoint{
-			Name:      meal.Name,
-			Latitude:  *meal.Latitude,
-			Longitude: *meal.Longitude,
-			POIID:     meal.POIID,
-		})
+		if len(points) > 0 && points[len(points)-1].Name == point.Name {
+			return
+		}
+		points = append(points, point)
+	}
+
+	if len(day.Transport) > 0 {
+		appendPoint(day.Transport[0].FromPlace)
+		for _, leg := range day.Transport {
+			appendPoint(leg.ToPlace)
+		}
+		if len(points) >= 2 {
+			return points
+		}
+	}
+
+	if day.Hotel != nil {
+		appendPoint(day.Hotel.Name)
+	}
+	for _, spot := range day.Spots {
+		appendPoint(spot.Name)
+	}
+	for _, meal := range day.Meals {
+		appendPoint(meal.Name)
+	}
+	if day.Hotel != nil {
+		appendPoint(day.Hotel.Name)
 	}
 	return points
 }

@@ -56,7 +56,7 @@ func Load() Config {
 		Port:                env("PORT", "8000"),
 		DataDir:             env("DATA_DIR", filepath.Join("data", "guides")),
 		StorageFile:         env("STORAGE_FILE", filepath.Join("data", "trips.json")),
-		AgentMode:           env("AGENT_MODE", "tool"),
+		AgentMode:           env("AGENT_MODE", "multi"),
 		EnableAmapEnrich:    envBool("ENABLE_AMAP_ENRICHMENT", false),
 		EnableAmapWeather:   envBool("ENABLE_AMAP_WEATHER", false),
 		EnableAmapRouting:   envBool("ENABLE_AMAP_ROUTING", false),

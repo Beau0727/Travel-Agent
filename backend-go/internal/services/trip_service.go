@@ -240,13 +240,7 @@ func trimEditMessages(messages []domain.TripEditMessage, max int) []domain.TripE
 }
 
 func resetEditedDayTransport(day *domain.DayPlan, destination string) {
-	to := ""
-	if len(day.Spots) > 0 {
-		to = day.Spots[0].Name
-	} else if len(day.Meals) > 0 {
-		to = day.Meals[0].Name
-	}
-	if to == "" {
+	if len(day.Spots) == 0 && len(day.Meals) == 0 {
 		day.Transport = nil
 		return
 	}
@@ -254,14 +248,10 @@ func resetEditedDayTransport(day *domain.DayPlan, destination string) {
 	if day.Hotel != nil && strings.TrimSpace(day.Hotel.Name) != "" {
 		from = day.Hotel.Name
 	}
-	day.Transport = []domain.TransportItem{{
-		Mode:          "交通待确认",
-		FromPlace:     from,
-		ToPlace:       to,
-		EstimatedCost: 0,
-		Duration:      "待重新规划",
-		RouteStatus:   "pending",
-	}}
+	day.Transport = buildTimelineTransport(from, day.Spots, day.Meals, 0)
+	for i := range day.Transport {
+		day.Transport[i].RouteStatus = "pending"
+	}
 }
 
 func summarizeDayEdit(before, after domain.DayPlan, draft DayEditDraft, instruction string) []string {
@@ -340,6 +330,10 @@ func applyEditValidationRepairs(itinerary *domain.Itinerary, issues []validators
 					continue
 				}
 				itinerary.Days[i].Notes = appendUniqueText(itinerary.Days[i].Notes, "已根据校验结果提示：当天节奏可能偏满，建议把部分点位作为备选。")
+				repaired = true
+			}
+		case validators.CodeDestinationMismatch, validators.CodePlaceholderContent:
+			if SanitizeItineraryContent(domain.TripRequest{Destination: itinerary.Destination, Budget: itinerary.EstimatedBudget}, nil, itinerary) {
 				repaired = true
 			}
 		}

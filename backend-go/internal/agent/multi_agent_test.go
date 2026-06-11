@@ -74,3 +74,47 @@ func TestMultiAgentTravelPlanningAgentRunsRoleChain(t *testing.T) {
 		t.Fatalf("expected finalized itinerary, got %#v", itinerary)
 	}
 }
+
+func TestParallelPlaceCandidateAgentsPopulateCandidateBundle(t *testing.T) {
+	t.Parallel()
+
+	toolClient := NewLocalMCPToolClient(
+		nil,
+		nil,
+		nil,
+		nil,
+		nil,
+		nil,
+		nil,
+		nil,
+	)
+	state := &State{
+		Request: domain.TripRequest{
+			Destination: "大理",
+			StartDate:   "2026-06-10",
+			EndDate:     "2026-06-11",
+			Pace:        "relaxed",
+		},
+		DayCount: 2,
+		RAGContexts: []string{
+			"大理古城、喜洲古镇、洱海生态廊道适合慢节奏游览。大理白族风味餐厅、洱海砂锅鱼餐厅适合作为本地特色餐饮。",
+		},
+	}
+
+	err := runParallelPlaceCandidateAgents(toolClient)(context.Background(), state)
+	if err != nil {
+		t.Fatalf("runParallelPlaceCandidateAgents returned error: %v", err)
+	}
+	if len(state.CandidateBundle.Attractions) == 0 {
+		t.Fatalf("expected attraction candidates")
+	}
+	if len(state.CandidateBundle.Meals) == 0 {
+		t.Fatalf("expected meal candidates")
+	}
+	if !strings.Contains(strings.Join(state.RAGContexts, "\n"), "结构化候选餐厅") {
+		t.Fatalf("expected candidate context to be appended, got %#v", state.RAGContexts)
+	}
+	if len(state.MCPToolObservations) != 2 {
+		t.Fatalf("expected two MCP observations, got %d", len(state.MCPToolObservations))
+	}
+}

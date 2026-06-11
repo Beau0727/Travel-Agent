@@ -1,6 +1,10 @@
 package services
 
-import "testing"
+import (
+	"testing"
+
+	"travel-agent-go/internal/domain"
+)
 
 func TestFormatLngLatUsesAmapOrder(t *testing.T) {
 	got := formatLngLat(25.6065, 100.2676)
@@ -69,5 +73,46 @@ func TestNormalizeAmapRoute(t *testing.T) {
 	}
 	if got.Summary == "" {
 		t.Fatalf("Summary is empty")
+	}
+}
+
+func TestRoutePointsFromDayFollowsHotelTimeline(t *testing.T) {
+	t.Parallel()
+
+	hotelLat, hotelLng := 25.6000, 100.2000
+	spotLat, spotLng := 25.6100, 100.2100
+	mealLat, mealLng := 25.6200, 100.2200
+	day := domain.DayPlan{
+		Hotel: &domain.HotelItem{
+			Name:      "大理舒适型酒店（全程默认同住）",
+			Latitude:  &hotelLat,
+			Longitude: &hotelLng,
+		},
+		Spots: []domain.SpotItem{{
+			Name:      "大理古城",
+			Latitude:  &spotLat,
+			Longitude: &spotLng,
+		}},
+		Meals: []domain.MealItem{{
+			Name:      "大理白族风味餐厅",
+			Latitude:  &mealLat,
+			Longitude: &mealLng,
+		}},
+		Transport: []domain.TransportItem{
+			{FromPlace: "大理舒适型酒店（全程默认同住）", ToPlace: "大理古城"},
+			{FromPlace: "大理古城", ToPlace: "大理白族风味餐厅"},
+			{FromPlace: "大理白族风味餐厅", ToPlace: "大理舒适型酒店（全程默认同住）"},
+		},
+	}
+
+	points := routePointsFromDay(day)
+	if len(points) != 4 {
+		t.Fatalf("expected 4 route points, got %#v", points)
+	}
+	want := []string{"大理舒适型酒店（全程默认同住）", "大理古城", "大理白族风味餐厅", "大理舒适型酒店（全程默认同住）"}
+	for i, name := range want {
+		if points[i].Name != name {
+			t.Fatalf("point %d = %q, want %q; all=%#v", i, points[i].Name, name, points)
+		}
 	}
 }

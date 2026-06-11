@@ -9,6 +9,7 @@ import (
 	"time"
 
 	"travel-agent-go/internal/domain"
+	"travel-agent-go/internal/geo"
 )
 
 func calcDayCount(startDate, endDate string) int {
@@ -150,6 +151,14 @@ func pickDemoMeals(destination string, contexts []string, dayCount int) []string
 	return candidates[:dayCount]
 }
 
+func LocalSpotCandidates(destination string, contexts []string, limit int) []string {
+	return firstNStrings(extractContextNames(destination, contexts, attractionNameRe, knownDestinationSpots(destination)), limit)
+}
+
+func LocalMealCandidates(destination string, contexts []string, limit int) []string {
+	return firstNStrings(extractContextNames(destination, contexts, foodNameRe, knownDestinationMeals(destination)), limit)
+}
+
 func extractContextNames(destination string, contexts []string, pattern *regexp.Regexp, seeds []string) []string {
 	joined := strings.Join(contexts, "\n")
 	candidates := []string{}
@@ -164,7 +173,7 @@ func extractContextNames(destination string, contexts []string, pattern *regexp.
 
 func addCandidateName(candidates *[]string, destination, name string) {
 	name = cleanCandidateName(name)
-	if name == "" || isPlaceholderName(name, destination) || isGenericCandidateName(name, destination) {
+	if name == "" || isPlaceholderName(name, destination) || isGenericCandidateName(name, destination) || geo.HasConflictingCityMention(destination, name) {
 		return
 	}
 	for _, existing := range *candidates {
@@ -305,31 +314,43 @@ func SanitizeItineraryContent(request domain.TripRequest, contexts []string, iti
 	meals := pickDemoMeals(request.Destination, contexts, dayCount)
 	changed := false
 	for dayIndex := range itinerary.Days {
-		if len(itinerary.Days[dayIndex].Spots) > 0 && isPlaceholderName(itinerary.Days[dayIndex].Spots[0].Name, request.Destination) {
-			itinerary.Days[dayIndex].Spots[0].Name = spots[dayIndex]
-			itinerary.Days[dayIndex].Spots[0].Description = defaultString(
-				itinerary.Days[dayIndex].Spots[0].Description,
-				"结合在线资料、本地攻略和旅行偏好安排，出发前建议再核对开放状态。",
-			)
-			itinerary.Days[dayIndex].Spots[0].Address = ""
-			itinerary.Days[dayIndex].Spots[0].Latitude = nil
-			itinerary.Days[dayIndex].Spots[0].Longitude = nil
-			itinerary.Days[dayIndex].Spots[0].POIID = ""
-			itinerary.Days[dayIndex].Spots[0].ImageURL = ""
-			itinerary.Days[dayIndex].Spots[0].EstimatedCost = estimateTicketCost(spots[dayIndex], itinerary.Days[dayIndex].Spots[0].Description)
-			changed = true
+		for spotIndex := range itinerary.Days[dayIndex].Spots {
+			spot := &itinerary.Days[dayIndex].Spots[spotIndex]
+			if isPlaceholderName(spot.Name, request.Destination) || geo.HasConflictingCityMention(request.Destination, spot.Name+" "+spot.City+" "+spot.Address) {
+				spot.Name = spots[(dayIndex+spotIndex)%len(spots)]
+				spot.Description = defaultString(
+					spot.Description,
+					"结合在线资料、本地攻略和旅行偏好安排，出发前建议再核对开放状态。",
+				)
+				spot.Location = request.Destination
+				spot.City = request.Destination
+				spot.Adcode = ""
+				spot.Address = ""
+				spot.Latitude = nil
+				spot.Longitude = nil
+				spot.POIID = ""
+				spot.ImageURL = ""
+				spot.EstimatedCost = estimateTicketCost(spot.Name, spot.Description)
+				changed = true
+			}
 		}
-		if len(itinerary.Days[dayIndex].Meals) > 0 && isPlaceholderName(itinerary.Days[dayIndex].Meals[0].Name, request.Destination) {
-			itinerary.Days[dayIndex].Meals[0].Name = meals[dayIndex]
-			itinerary.Days[dayIndex].Meals[0].Notes = defaultString(
-				itinerary.Days[dayIndex].Meals[0].Notes,
-				"可按当天路线和排队情况灵活选择同类本地餐饮。",
-			)
-			itinerary.Days[dayIndex].Meals[0].Address = ""
-			itinerary.Days[dayIndex].Meals[0].Latitude = nil
-			itinerary.Days[dayIndex].Meals[0].Longitude = nil
-			itinerary.Days[dayIndex].Meals[0].POIID = ""
-			changed = true
+		for mealIndex := range itinerary.Days[dayIndex].Meals {
+			meal := &itinerary.Days[dayIndex].Meals[mealIndex]
+			if isPlaceholderName(meal.Name, request.Destination) || geo.HasConflictingCityMention(request.Destination, meal.Name+" "+meal.City+" "+meal.Address) {
+				meal.Name = meals[(dayIndex+mealIndex)%len(meals)]
+				meal.Notes = defaultString(
+					meal.Notes,
+					"可按当天路线和排队情况灵活选择同类本地餐饮。",
+				)
+				meal.Location = request.Destination
+				meal.City = request.Destination
+				meal.Adcode = ""
+				meal.Address = ""
+				meal.Latitude = nil
+				meal.Longitude = nil
+				meal.POIID = ""
+				changed = true
+			}
 		}
 		primarySpot := ""
 		if len(itinerary.Days[dayIndex].Spots) > 0 {
@@ -348,6 +369,22 @@ func SanitizeItineraryContent(request domain.TripRequest, contexts []string, iti
 		}
 	}
 	if changed {
+		for dayIndex := range itinerary.Days {
+			transportBudget := 0.0
+			for _, transport := range itinerary.Days[dayIndex].Transport {
+				transportBudget += transport.EstimatedCost
+			}
+			hotelName := defaultTripHotelName(request.Destination, request.HotelLevel)
+			if itinerary.Days[dayIndex].Hotel != nil && strings.TrimSpace(itinerary.Days[dayIndex].Hotel.Name) != "" {
+				hotelName = itinerary.Days[dayIndex].Hotel.Name
+			}
+			itinerary.Days[dayIndex].Transport = buildTimelineTransport(
+				hotelName,
+				itinerary.Days[dayIndex].Spots,
+				itinerary.Days[dayIndex].Meals,
+				transportBudget,
+			)
+		}
 		*itinerary = refreshBudget(*itinerary, request.Budget)
 	}
 	return changed
@@ -454,6 +491,13 @@ func prorate(total float64, count int) []float64 {
 func firstN(values []string, n int) []string {
 	if len(values) < n {
 		n = len(values)
+	}
+	return values[:n]
+}
+
+func firstNStrings(values []string, n int) []string {
+	if n <= 0 || len(values) <= n {
+		return values
 	}
 	return values[:n]
 }

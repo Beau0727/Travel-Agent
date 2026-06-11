@@ -46,6 +46,10 @@ func (r *QdrantRetriever) Retrieve(destination string, preferences []string, pac
 func (r *QdrantRetriever) RetrieveDetailed(query corerag.Query) ([]corerag.RetrievedChunk, error) {
 	start := time.Now()
 	limit := query.Limit(5)
+	searchLimit := limit * 4
+	if searchLimit < limit {
+		searchLimit = limit
+	}
 
 	ctx, cancel := context.WithTimeout(context.Background(), 60*time.Second)
 	defer cancel()
@@ -64,6 +68,7 @@ func (r *QdrantRetriever) RetrieveDetailed(query corerag.Query) ([]corerag.Retri
 		"channel", denseChannel,
 		"variants", len(texts),
 		"top_k", limit,
+		"search_limit", searchLimit,
 	)
 
 	merged := map[string]corerag.RetrievedChunk{}
@@ -82,7 +87,7 @@ func (r *QdrantRetriever) RetrieveDetailed(query corerag.Query) ([]corerag.Retri
 			return nil, err
 		}
 
-		results, err := r.qdrant.Search(ctx, r.collection, vector, limit)
+		results, err := r.qdrant.Search(ctx, r.collection, vector, searchLimit)
 		if err != nil {
 			logging.Warn(nil, "qdrant retriever search failed",
 				"destination", query.Destination,
@@ -110,6 +115,9 @@ func (r *QdrantRetriever) RetrieveDetailed(query corerag.Query) ([]corerag.Retri
 		for rank, item := range results {
 			chunk := qdrantResultToChunk(item)
 			if strings.TrimSpace(chunk.Text) == "" {
+				continue
+			}
+			if !chunkMatchesDestination(query.Destination, chunk) {
 				continue
 			}
 			score := item.Score / float64(variantIndex+1)

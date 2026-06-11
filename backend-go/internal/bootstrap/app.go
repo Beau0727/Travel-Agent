@@ -105,12 +105,12 @@ func NewApp(cfg config.Config) *App {
 	)
 	var travelAgent application.ItineraryGenerator
 	switch strings.ToLower(strings.TrimSpace(cfg.AgentMode)) {
-	case "multi", "multi-agent", "multi_agent":
-		travelAgent = multiAgent
+	case "tool", "tool-calling", "tool_calling":
+		travelAgent = toolCallingAgent
 	case "default", "fixed", "rule":
 		travelAgent = defaultAgent
 	default:
-		travelAgent = toolCallingAgent
+		travelAgent = multiAgent
 	}
 	logging.Info(nil, "travel agent configured",
 		"mode", cfg.AgentMode,
@@ -137,11 +137,11 @@ func NewApp(cfg config.Config) *App {
 
 func selectedAgentName(mode string) string {
 	switch strings.ToLower(strings.TrimSpace(mode)) {
-	case "multi", "multi-agent", "multi_agent":
-		return "multi_agent"
+	case "tool", "tool-calling", "tool_calling":
+		return "tool_calling_agent"
 	case "default", "fixed", "rule":
 		return "default_agent"
 	default:
-		return "tool_calling_agent"
+		return "multi_agent"
 	}
 }

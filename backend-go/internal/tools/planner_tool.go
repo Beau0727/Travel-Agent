@@ -17,9 +17,10 @@ type PlannerTool struct {
 }
 
 type PlannerInput struct {
-	Request  domain.TripRequest
-	Contexts []string
-	DayCount int
+	Request         domain.TripRequest
+	Contexts        []string
+	DayCount        int
+	CandidateBundle services.PlaceCandidateBundle
 }
 
 func NewPlannerTool(planner services.Planner) *PlannerTool {
@@ -41,7 +42,7 @@ func (t *PlannerTool) Generate(ctx context.Context, input PlannerInput) (service
 	)
 	draft, ok, err := t.planner.GenerateDraft(input.Request, input.Contexts, input.DayCount)
 	if err == nil && ok {
-		draft = services.SanitizePlannerDraft(input.Request, input.Contexts, draft, input.DayCount)
+		draft = services.SanitizePlannerDraftWithCandidates(input.Request, input.Contexts, draft, input.DayCount, input.CandidateBundle)
 		logging.Info(ctx, "planner tool generate completed",
 			"destination", input.Request.Destination,
 			"planner", "primary",
@@ -71,7 +72,7 @@ func (t *PlannerTool) Generate(ctx context.Context, input PlannerInput) (service
 		)
 		return fallbackDraft, fallbackErr
 	}
-	fallbackDraft = services.SanitizePlannerDraft(input.Request, input.Contexts, fallbackDraft, input.DayCount)
+	fallbackDraft = services.SanitizePlannerDraftWithCandidates(input.Request, input.Contexts, fallbackDraft, input.DayCount, input.CandidateBundle)
 	logging.Info(ctx, "planner tool generate completed",
 		"destination", input.Request.Destination,
 		"planner", "fallback",

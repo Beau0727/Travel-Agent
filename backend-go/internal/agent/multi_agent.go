@@ -67,6 +67,16 @@ func NewMultiAgentTravelPlanningAgent(
 	validatorSet *validators.Set,
 	fallback *TravelPlanningAgent,
 ) *MultiAgentTravelPlanningAgent {
+	mcpToolClient := NewLocalMCPToolClient(
+		ragTool,
+		webResearchTool,
+		plannerTool,
+		mapTool,
+		routeTool,
+		weatherService,
+		assembler,
+		validatorSet,
+	)
 	return &MultiAgentTravelPlanningAgent{
 		agents: []RoleAgent{
 			newRoleAgent(
@@ -79,31 +89,37 @@ func NewMultiAgentTravelPlanningAgent(
 				"research_agent",
 				"资料研究 Agent",
 				"收集在线证据、本地攻略和天气上下文，给规划阶段提供可靠材料。",
-				runResearchAgent(ragTool, webResearchTool, weatherService),
+				runResearchAgent(mcpToolClient),
+			),
+			newRoleAgent(
+				"place_candidate_agents",
+				"并行候选收集 Agents",
+				"景点 Agent 和餐厅 Agent 并行收集目的地内候选池，并进行基础地理验证。",
+				runParallelPlaceCandidateAgents(mcpToolClient),
 			),
 			newRoleAgent(
 				"planning_agent",
 				"行程规划 Agent",
 				"基于请求和研究上下文生成结构化行程草稿并组装 itinerary。",
-				runPlanningAgent(plannerTool, assembler),
+				runPlanningAgent(mcpToolClient),
 			),
 			newRoleAgent(
 				"logistics_agent",
 				"地图路线 Agent",
 				"补充地图 POI 和真实路线信息，让行程更可执行。",
-				runLogisticsAgent(mapTool, routeTool),
+				runLogisticsAgent(mcpToolClient),
 			),
 			newRoleAgent(
 				"review_agent",
 				"质量审核 Agent",
 				"检查预算、节奏、偏好、路线和占位内容，并执行规则级修复。",
-				runReviewAgent(validatorSet),
+				runReviewAgent(mcpToolClient),
 			),
 			newRoleAgent(
 				"finalizer_agent",
 				"最终整理 Agent",
 				"清洗最终结果，挂载证据和来源说明。",
-				runFinalizerAgent,
+				runFinalizerAgent(mcpToolClient),
 			),
 		},
 		fallback: fallback,
@@ -159,6 +175,12 @@ func (a *MultiAgentTravelPlanningAgent) Generate(ctx context.Context, request do
 func (a *MultiAgentTravelPlanningAgent) run(ctx context.Context, state *State) error {
 	for _, worker := range a.agents {
 		start := time.Now()
+		state.RegisterA2AAgent(worker)
+		state.AddA2AMessage("orchestrator", worker.Name(), "task.assign", worker.Goal(), map[string]any{
+			"role":        worker.Role(),
+			"destination": state.Request.Destination,
+			"day_count":   state.DayCount,
+		})
 		state.AddTrace(worker.Name(), worker.Role()+" started: "+worker.Goal())
 		startArgs := append([]any{
 			"agent", worker.Name(),
@@ -169,6 +191,10 @@ func (a *MultiAgentTravelPlanningAgent) run(ctx context.Context, state *State) e
 
 		if err := worker.Run(ctx, state); err != nil {
 			state.AddTrace(worker.Name(), "failed: "+err.Error())
+			state.AddA2AMessage(worker.Name(), "orchestrator", "task.failed", worker.Goal(), map[string]any{
+				"error":       err.Error(),
+				"duration_ms": time.Since(start).Milliseconds(),
+			})
 			errorArgs := append([]any{
 				"agent", worker.Name(),
 				"role", worker.Role(),
@@ -180,6 +206,13 @@ func (a *MultiAgentTravelPlanningAgent) run(ctx context.Context, state *State) e
 		}
 
 		state.AddTrace(worker.Name(), "completed")
+		state.AddA2AMessage(worker.Name(), "orchestrator", "task.completed", worker.Goal(), map[string]any{
+			"duration_ms":       time.Since(start).Milliseconds(),
+			"contexts":          len(state.RAGContexts),
+			"attraction_count":  len(state.CandidateBundle.Attractions),
+			"meal_count":        len(state.CandidateBundle.Meals),
+			"validation_issues": len(state.ValidationIssues),
+		})
 		completedArgs := append([]any{
 			"agent", worker.Name(),
 			"role", worker.Role(),
@@ -201,102 +234,187 @@ func runRequestAgent(ctx context.Context, state *State) error {
 	return understandRequestStep(ctx, state)
 }
 
-func runResearchAgent(
-	ragTool *tools.RAGTool,
-	webResearchTool *tools.WebResearchTool,
-	weatherService *services.WeatherService,
-) func(ctx context.Context, state *State) error {
+func runResearchAgent(mcpToolClient MCPToolClient) func(ctx context.Context, state *State) error {
 	return func(ctx context.Context, state *State) error {
-		if webResearchTool != nil {
-			if err := researchOnlineEvidenceStep(webResearchTool)(ctx, state); err != nil {
-				return err
-			}
+		if mcpToolClient == nil {
+			return errors.New("mcp tool client is not configured")
 		}
-		if ragTool != nil {
-			if err := retrieveContextStep(ragTool)(ctx, state); err != nil {
-				return err
-			}
+
+		webResult := mcpToolClient.CallTool(ctx, state, ToolWebResearch, WebResearchToolArgs{
+			Destination: state.Request.Destination,
+			Query:       buildOnlineResearchQuery(state.Request),
+			TopK:        6,
+		})
+		if !webResult.OK {
+			state.AddTrace("research_agent", "联网资料收集失败，降级使用本地资料："+webResult.Error)
 		}
-		if weatherService != nil {
-			if err := loadWeatherStep(weatherService)(ctx, state); err != nil {
-				return err
-			}
+
+		ragResult := mcpToolClient.CallTool(ctx, state, ToolRAGSearch, RAGSearchToolArgs{
+			Destination:  state.Request.Destination,
+			Preferences:  state.Request.Preferences,
+			Pace:         state.Request.Pace,
+			SpecialNotes: state.Request.SpecialNotes,
+			TopK:         5,
+		})
+		if !ragResult.OK {
+			state.AddTrace("research_agent", "RAG 工具失败，继续使用已有上下文："+ragResult.Error)
+		}
+
+		weatherResult := mcpToolClient.CallTool(ctx, state, ToolWeatherForecast, WeatherForecastToolArgs{
+			City: state.Request.Destination,
+		})
+		if !weatherResult.OK {
+			state.AddTrace("research_agent", "天气工具失败，继续生成基础行程："+weatherResult.Error)
 		}
 		return nil
 	}
 }
 
-func runPlanningAgent(
-	plannerTool *tools.PlannerTool,
-	assembler *services.ItineraryAssembler,
-) func(ctx context.Context, state *State) error {
+func runParallelPlaceCandidateAgents(mcpToolClient MCPToolClient) func(ctx context.Context, state *State) error {
 	return func(ctx context.Context, state *State) error {
-		if plannerTool == nil {
-			return errors.New("planner tool is not configured")
+		if mcpToolClient == nil {
+			return errors.New("mcp tool client is not configured")
 		}
-		if assembler == nil {
-			return errors.New("itinerary assembler is not configured")
+		type candidateResult struct {
+			name         ToolName
+			result       ToolExecutionResult
+			observations []MCPToolObservation
 		}
-		if err := generateDraftStep(plannerTool)(ctx, state); err != nil {
-			return err
+		results := make(chan candidateResult, 2)
+		callCandidateTool := func(name ToolName) {
+			localState := &State{
+				Request:     state.Request,
+				DayCount:    state.DayCount,
+				RAGContexts: append([]string(nil), state.RAGContexts...),
+			}
+			result := mcpToolClient.CallTool(ctx, localState, name, PlaceCandidateToolArgs{
+				Destination: state.Request.Destination,
+				Limit:       24,
+			})
+			results <- candidateResult{
+				name:         name,
+				result:       result,
+				observations: append([]MCPToolObservation(nil), localState.MCPToolObservations...),
+			}
 		}
-		return assembleItineraryStep(assembler)(ctx, state)
+
+		go callCandidateTool(ToolCollectAttractions)
+		go callCandidateTool(ToolCollectMeals)
+
+		var bundle services.PlaceCandidateBundle
+		failures := []string{}
+		for i := 0; i < 2; i++ {
+			candidate := <-results
+			state.MCPToolObservations = append(state.MCPToolObservations, candidate.observations...)
+			if !candidate.result.OK {
+				failures = append(failures, candidate.result.Error)
+				continue
+			}
+			payload, ok := candidate.result.Result.(PlaceCandidateToolResult)
+			if !ok {
+				failures = append(failures, string(candidate.name)+" returned unexpected payload")
+				continue
+			}
+			switch candidate.name {
+			case ToolCollectAttractions:
+				bundle.Attractions = payload.Candidates
+			case ToolCollectMeals:
+				bundle.Meals = payload.Candidates
+			}
+		}
+
+		if len(bundle.Attractions) == 0 && len(bundle.Meals) == 0 && len(failures) > 0 {
+			return fmt.Errorf("place candidate tools failed: %v", failures)
+		}
+		state.CandidateBundle = bundle
+		if candidateContext := services.FormatPlaceCandidateContext(bundle); candidateContext != "" {
+			state.RAGContexts = appendUniqueStrings(state.RAGContexts, candidateContext)
+		}
+		state.AddA2AMessage("attraction_agent", "planning_agent", "artifact.place_candidates", "提供目的地内景点候选池", map[string]any{
+			"count": len(bundle.Attractions),
+		})
+		state.AddA2AMessage("restaurant_agent", "planning_agent", "artifact.place_candidates", "提供目的地内餐厅候选池", map[string]any{
+			"count": len(bundle.Meals),
+		})
+		state.AddTrace("place_candidate_agents", "候选池完成：景点 "+itoa(len(bundle.Attractions))+"，餐厅 "+itoa(len(bundle.Meals)))
+		return nil
 	}
 }
 
-func runLogisticsAgent(
-	mapTool *tools.MapTool,
-	routeTool *tools.RouteTool,
-) func(ctx context.Context, state *State) error {
+func runPlanningAgent(mcpToolClient MCPToolClient) func(ctx context.Context, state *State) error {
+	return func(ctx context.Context, state *State) error {
+		if mcpToolClient == nil {
+			return errors.New("mcp tool client is not configured")
+		}
+		result := mcpToolClient.CallTool(ctx, state, ToolGenerateItineraryDraft, GenerateItineraryDraftToolArgs{
+			DayCount: state.DayCount,
+		})
+		if !result.OK {
+			return errors.New(result.Error)
+		}
+		return nil
+	}
+}
+
+func runLogisticsAgent(mcpToolClient MCPToolClient) func(ctx context.Context, state *State) error {
 	return func(ctx context.Context, state *State) error {
 		if !hasUsableItinerary(state.FinalItinerary) {
 			return errors.New("no itinerary to enrich")
 		}
-		if mapTool != nil {
-			if err := enrichMapStep(mapTool)(ctx, state); err != nil {
-				return err
-			}
+		mapResult := mcpToolClient.CallTool(ctx, state, ToolEnrichMap, nil)
+		if !mapResult.OK {
+			state.AddTrace("logistics_agent", "地图工具失败，保留无坐标 itinerary："+mapResult.Error)
 		}
-		if routeTool != nil {
-			if err := enrichRoutesStep(routeTool)(ctx, state); err != nil {
-				return err
-			}
+		routeResult := mcpToolClient.CallTool(ctx, state, ToolEnrichRoutes, nil)
+		if !routeResult.OK {
+			state.AddTrace("logistics_agent", "路线工具失败，保留原交通信息："+routeResult.Error)
 		}
 		return nil
 	}
 }
 
-func runReviewAgent(validatorSet *validators.Set) func(ctx context.Context, state *State) error {
+func runReviewAgent(mcpToolClient MCPToolClient) func(ctx context.Context, state *State) error {
 	return func(ctx context.Context, state *State) error {
 		if !hasUsableItinerary(state.FinalItinerary) {
 			return errors.New("no itinerary to review")
 		}
-		if validatorSet == nil {
-			state.AddTrace("review_agent", "validator set is not configured")
-			return nil
+		if mcpToolClient == nil {
+			return errors.New("mcp tool client is not configured")
 		}
-		if err := validateItineraryStep(validatorSet)(ctx, state); err != nil {
-			return err
+		validateResult := mcpToolClient.CallTool(ctx, state, ToolValidateItinerary, nil)
+		if !validateResult.OK {
+			return errors.New(validateResult.Error)
 		}
 		if len(state.ValidationIssues) == 0 {
 			return nil
 		}
 
 		before := len(state.ValidationIssues)
-		if err := repairItineraryStep(ctx, state); err != nil {
-			return err
+		repairResult := mcpToolClient.CallTool(ctx, state, ToolRepairItinerary, nil)
+		if !repairResult.OK {
+			return errors.New(repairResult.Error)
 		}
-		if err := validateItineraryStep(validatorSet)(ctx, state); err != nil {
-			return err
+		validateAgainResult := mcpToolClient.CallTool(ctx, state, ToolValidateItinerary, nil)
+		if !validateAgainResult.OK {
+			return errors.New(validateAgainResult.Error)
 		}
 		state.AddTrace("review_agent", "复核完成，问题数量："+itoa(before)+" -> "+itoa(len(state.ValidationIssues)))
 		return nil
 	}
 }
 
-func runFinalizerAgent(ctx context.Context, state *State) error {
-	if !hasUsableItinerary(state.FinalItinerary) {
-		return errors.New("no itinerary to finalize")
+func runFinalizerAgent(mcpToolClient MCPToolClient) func(ctx context.Context, state *State) error {
+	return func(ctx context.Context, state *State) error {
+		if !hasUsableItinerary(state.FinalItinerary) {
+			return errors.New("no itinerary to finalize")
+		}
+		if mcpToolClient == nil {
+			return errors.New("mcp tool client is not configured")
+		}
+		result := mcpToolClient.CallTool(ctx, state, ToolFinishItinerary, nil)
+		if !result.OK {
+			return errors.New(result.Error)
+		}
+		return nil
 	}
-	return finalizeStep(ctx, state)
 }

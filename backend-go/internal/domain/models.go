@@ -44,6 +44,8 @@ type SpotItem struct {
 	Description   string   `json:"description,omitempty"`
 	EstimatedCost float64  `json:"estimated_cost"`
 	Location      string   `json:"location,omitempty"`
+	City          string   `json:"city,omitempty"`
+	Adcode        string   `json:"adcode,omitempty"`
 	ImageURL      string   `json:"image_url,omitempty"`
 	Address       string   `json:"address,omitempty"`
 	Latitude      *float64 `json:"latitude,omitempty"`
@@ -54,9 +56,12 @@ type SpotItem struct {
 type MealItem struct {
 	Name          string   `json:"name"`
 	MealType      string   `json:"meal_type"`
+	Time          string   `json:"time,omitempty"`
 	EstimatedCost float64  `json:"estimated_cost"`
 	Notes         string   `json:"notes,omitempty"`
 	Location      string   `json:"location,omitempty"`
+	City          string   `json:"city,omitempty"`
+	Adcode        string   `json:"adcode,omitempty"`
 	ImageURL      string   `json:"image_url,omitempty"`
 	Address       string   `json:"address,omitempty"`
 	Latitude      *float64 `json:"latitude,omitempty"`
@@ -69,6 +74,8 @@ type HotelItem struct {
 	Level         string   `json:"level,omitempty"`
 	EstimatedCost float64  `json:"estimated_cost"`
 	Location      string   `json:"location,omitempty"`
+	City          string   `json:"city,omitempty"`
+	Adcode        string   `json:"adcode,omitempty"`
 	Address       string   `json:"address,omitempty"`
 	Latitude      *float64 `json:"latitude,omitempty"`
 	Longitude     *float64 `json:"longitude,omitempty"`

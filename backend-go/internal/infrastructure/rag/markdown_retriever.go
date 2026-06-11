@@ -11,6 +11,7 @@ import (
 	"time"
 	"unicode"
 
+	"travel-agent-go/internal/geo"
 	"travel-agent-go/internal/logging"
 	corerag "travel-agent-go/internal/rag"
 )
@@ -179,6 +180,9 @@ func lexicalSearch(chunks []corerag.Chunk, query corerag.Query, limit int) []cor
 	scored := make([]scoredChunk, 0, len(chunks))
 	totalDocs := float64(len(chunks))
 	for i, chunk := range chunks {
+		if !chunkMatchesDestination(query.Destination, chunk) {
+			continue
+		}
 		score := 0.0
 		tf := termFrequency(docTokens[i])
 		for token, qf := range queryFreq {
@@ -210,6 +214,18 @@ func lexicalSearch(chunks []corerag.Chunk, query corerag.Query, limit int) []cor
 		results = append(results, result)
 	}
 	return results
+}
+
+func chunkMatchesDestination(destination string, chunk corerag.Chunk) bool {
+	destination = strings.TrimSpace(destination)
+	if destination == "" {
+		return true
+	}
+	if city, ok := chunk.Metadata["city"].(string); ok && strings.TrimSpace(city) != "" {
+		return geo.CityMatchesDestination(city, destination)
+	}
+	text := chunk.Title + "\n" + chunk.Text + "\n" + chunk.Source
+	return geo.TextMatchesDestination(destination, text)
 }
 
 func metadataBoost(query corerag.Query, chunk corerag.Chunk) float64 {

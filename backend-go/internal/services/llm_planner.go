@@ -47,8 +47,10 @@ func (p *LLMPlanner) GenerateDraft(request domain.TripRequest, contexts []string
 
 	prompt := "你是一名旅行规划助手。请只输出 JSON，不要 Markdown。\n" +
 		"字段：summary, tips, days。tips 必须是字符串数组。days 必须恰好包含 " + itoa(dayCount) + " 项。\n" +
-		"days 每项字段：day_index, theme, spot_name, spot_description, meal_name, meal_notes, daily_note。\n" +
-		"spot_name 和 meal_name 必须是真实地点或餐饮名称，不要使用“推荐景点 1”“特色餐饮 1”等占位词。\n" +
+		"days 每项字段：day_index, theme, spots, meals, daily_note；同时可兼容 spot_name, spot_description, meal_name, meal_notes。\n" +
+		"spots 是景点数组，每项字段：name, start_time, end_time, description。meals 是餐饮数组，每项字段：name, meal_type, time, notes。\n" +
+		"轻松节奏每天 2 个景点，适中节奏每天 3 个景点，紧凑节奏每天 3 到 4 个景点；每天至少安排午餐和晚餐 2 个餐饮建议。\n" +
+		"所有 spots.name 和 meals.name 必须是目的地城市内的真实地点或餐饮名称，不要使用“推荐景点 1”“特色餐饮 1”等占位词，也不要安排其他城市点位。\n" +
 		"优先使用上下文中的在线证据、候选景点、官方/地图/票务来源和本地攻略信息。\n" +
 		"目的地：" + request.Destination + "\n" +
 		"日期：" + request.StartDate + " 至 " + request.EndDate + "\n" +
@@ -98,6 +100,8 @@ func (p *LLMPlanner) GenerateDraft(request domain.TripRequest, contexts []string
 			MealName:        item.MealName,
 			MealNotes:       item.MealNotes,
 			DailyNote:       item.DailyNote,
+			Spots:           plannerJSONSpots(item.Spots),
+			Meals:           plannerJSONMeals(item.Meals),
 		})
 	}
 	logging.Info(ctx, "llm planner generate draft completed",
@@ -227,6 +231,22 @@ type plannerJSONDay struct {
 	MealName        string      `json:"meal_name"`
 	MealNotes       string      `json:"meal_notes"`
 	DailyNote       string      `json:"daily_note"`
+	Spots           []plannerJSONSpot `json:"spots"`
+	Meals           []plannerJSONMeal `json:"meals"`
+}
+
+type plannerJSONSpot struct {
+	Name        string `json:"name"`
+	StartTime   string `json:"start_time"`
+	EndTime     string `json:"end_time"`
+	Description string `json:"description"`
+}
+
+type plannerJSONMeal struct {
+	Name     string `json:"name"`
+	MealType string `json:"meal_type"`
+	Time     string `json:"time"`
+	Notes    string `json:"notes"`
 }
 
 type flexibleStringList []string
@@ -271,4 +291,36 @@ func (i *flexibleInt) UnmarshalJSON(data []byte) error {
 	}
 	*i = flexibleInt(parsed)
 	return nil
+}
+
+func plannerJSONSpots(values []plannerJSONSpot) []PlannerSpotDraft {
+	spots := make([]PlannerSpotDraft, 0, len(values))
+	for _, value := range values {
+		if strings.TrimSpace(value.Name) == "" {
+			continue
+		}
+		spots = append(spots, PlannerSpotDraft{
+			Name:        strings.TrimSpace(value.Name),
+			StartTime:   strings.TrimSpace(value.StartTime),
+			EndTime:     strings.TrimSpace(value.EndTime),
+			Description: strings.TrimSpace(value.Description),
+		})
+	}
+	return spots
+}
+
+func plannerJSONMeals(values []plannerJSONMeal) []PlannerMealDraft {
+	meals := make([]PlannerMealDraft, 0, len(values))
+	for _, value := range values {
+		if strings.TrimSpace(value.Name) == "" {
+			continue
+		}
+		meals = append(meals, PlannerMealDraft{
+			Name:     strings.TrimSpace(value.Name),
+			MealType: strings.TrimSpace(value.MealType),
+			Time:     strings.TrimSpace(value.Time),
+			Notes:    strings.TrimSpace(value.Notes),
+		})
+	}
+	return meals
 }

@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"travel-agent-go/internal/domain"
+	"travel-agent-go/internal/geo"
 	"travel-agent-go/internal/services"
 	"travel-agent-go/internal/tools"
 	"travel-agent-go/internal/validators"
@@ -41,6 +42,7 @@ func NewDefaultTravelPlanningAgent(
 
 func understandRequestStep(ctx context.Context, state *State) error {
 	state.DayCount = calcDayCount(state.Request.StartDate, state.Request.EndDate)
+	state.DestinationAliases = geo.Aliases(state.Request.Destination)
 	state.AddTrace("understand_request", "识别目的地："+state.Request.Destination)
 	return nil
 }
@@ -110,9 +112,10 @@ func loadWeatherStep(weatherService *services.WeatherService) func(ctx context.C
 func generateDraftStep(plannerTool *tools.PlannerTool) func(ctx context.Context, state *State) error {
 	return func(ctx context.Context, state *State) error {
 		draft, err := plannerTool.Generate(ctx, tools.PlannerInput{
-			Request:  state.Request,
-			Contexts: state.RAGContexts,
-			DayCount: state.DayCount,
+			Request:         state.Request,
+			Contexts:        state.RAGContexts,
+			DayCount:        state.DayCount,
+			CandidateBundle: state.CandidateBundle,
 		})
 		if err != nil {
 			return err
@@ -192,6 +195,10 @@ func repairItineraryStep(ctx context.Context, state *State) error {
 		case validators.CodePlaceholderContent:
 			if services.SanitizeItineraryContent(state.Request, state.RAGContexts, &state.FinalItinerary) {
 				state.AddTrace("repair_itinerary", "已替换占位景点或餐饮名称")
+			}
+		case validators.CodeDestinationMismatch:
+			if services.SanitizeItineraryContent(state.Request, state.RAGContexts, &state.FinalItinerary) {
+				state.AddTrace("repair_itinerary", "已替换疑似跨城景点或餐饮，并重建当天交通线")
 			}
 		}
 	}

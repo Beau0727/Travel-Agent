@@ -181,7 +181,7 @@ go run ./cmd/eval-rag --backend hybrid --cases data\eval\rag_cases.jsonl --top-k
 PORT=8000
 DATA_DIR=data/guides
 STORAGE_FILE=data/trips.json
-AGENT_MODE=tool
+AGENT_MODE=multi
 
 LLM_API_KEY=
 LLM_BASE_URL=https://dashscope.aliyuncs.com/compatible-mode/v1
@@ -215,6 +215,8 @@ WEB_SEARCH_API_KEY=
 WEB_RESEARCH_TIMEOUT_SECONDS=20
 WEB_RESEARCH_MAX_PAGES=3
 ```
+
+`AGENT_MODE` 默认是 `multi`。multi-agent 主链内部采用 MCP-style 工具网关调用 RAG、联网研究、天气、候选池、规划、地图路线和校验工具；agent 之间通过 A2A-style 任务消息交接。当前为进程内协议边界，后续可以在同一接口上外接标准 MCP Server 或 A2A HTTP 服务。
 
 前端读取 `frontend/.env`：
 

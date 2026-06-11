@@ -16,6 +16,7 @@ import (
 
 	"travel-agent-go/internal/config"
 	"travel-agent-go/internal/domain"
+	"travel-agent-go/internal/geo"
 	"travel-agent-go/internal/logging"
 )
 
@@ -166,6 +167,14 @@ func (s *WebResearchService) Research(ctx context.Context, request WebResearchRe
 			}
 		} else {
 			source = mergeFetchedSource(searchResult, source)
+		}
+		if !webResearchSourceMatchesDestination(request.Destination, source) {
+			logging.Warn(ctx, "web research source rejected by destination filter",
+				"destination", request.Destination,
+				"url", source.URL,
+				"title", source.Title,
+			)
+			continue
 		}
 		sources = append(sources, source)
 		logging.Info(ctx, "web research source accepted",
@@ -459,6 +468,22 @@ func mergeFetchedSource(result WebSearchResult, source WebResearchSource) WebRes
 		source.Host = hostFromURL(source.URL)
 	}
 	return source
+}
+
+func webResearchSourceMatchesDestination(destination string, source WebResearchSource) bool {
+	destination = strings.TrimSpace(destination)
+	if destination == "" {
+		return true
+	}
+	text := strings.Join([]string{source.Title, source.URL, source.Host, source.Snippet}, " ")
+	if !geo.TextMatchesDestination(destination, text) {
+		return false
+	}
+	titleText := strings.Join([]string{source.Title, source.URL, source.Host}, " ")
+	if geo.HasConflictingCityMention(destination, titleText) && !geo.TextMatchesDestination(destination, source.Title) {
+		return false
+	}
+	return true
 }
 
 func prioritizeSearchResults(results []WebSearchResult) []WebSearchResult {

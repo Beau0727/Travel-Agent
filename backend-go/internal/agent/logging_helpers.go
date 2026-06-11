@@ -33,12 +33,16 @@ func stepStateLogArgs(state *State) []any {
 		"evidence_warnings", evidenceWarnings,
 		"weather_days", weatherDays,
 		"weather_source", weatherSource,
+		"candidate_attractions", len(state.CandidateBundle.Attractions),
+		"candidate_meals", len(state.CandidateBundle.Meals),
 		"draft_days", len(state.PlannerDraft.Days),
 		"final_trip_id", state.FinalItinerary.TripID,
 		"final_days", len(state.FinalItinerary.Days),
 		"transport_legs", countTransportLegs(state.FinalItinerary),
 		"validation_issues", len(state.ValidationIssues),
 		"tool_observations", len(state.ToolObservations),
+		"mcp_tool_observations", len(state.MCPToolObservations),
+		"a2a_messages", len(state.A2AMessages),
 		"trace_steps", len(state.Trace),
 	}
 }

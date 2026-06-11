@@ -528,9 +528,10 @@ func (a *ToolCallingTravelPlanningAgent) callGenerateItineraryDraft(ctx context.
 	)
 
 	draft, err := a.plannerTool.Generate(ctx, tools.PlannerInput{
-		Request:  state.Request,
-		Contexts: state.RAGContexts,
-		DayCount: dayCount,
+		Request:         state.Request,
+		Contexts:        state.RAGContexts,
+		DayCount:        dayCount,
+		CandidateBundle: state.CandidateBundle,
 	})
 	if err != nil {
 		logging.Warn(ctx, "planner draft tool failed",

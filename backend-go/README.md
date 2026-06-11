@@ -172,7 +172,7 @@ city_resolver.go  # 城市名 -> adcode / 经纬度
 PORT=8000
 DATA_DIR=data/guides
 STORAGE_FILE=data/trips.json
-AGENT_MODE=tool
+AGENT_MODE=multi
 
 LLM_API_KEY=
 LLM_BASE_URL=https://dashscope.aliyuncs.com/compatible-mode/v1
@@ -199,6 +199,8 @@ WEB_SEARCH_API_KEY=
 WEB_RESEARCH_TIMEOUT_SECONDS=20
 WEB_RESEARCH_MAX_PAGES=3
 ```
+
+`AGENT_MODE` 默认是 `multi`。当前 multi-agent 主链使用本地 MCP-style 工具网关调用 RAG、联网研究、天气、候选池、规划、地图路线和校验工具；agent 之间通过 A2A-style 任务消息交接。`tool` 和 `default` 仍保留为兼容模式。
 
 ## 启动方式
 
