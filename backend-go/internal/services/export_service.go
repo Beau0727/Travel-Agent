@@ -3,7 +3,7 @@ package services
 import (
 	"strings"
 
-	"zhilv-yuntu-go/internal/domain"
+	"travel-agent-go/internal/domain"
 )
 
 // RenderMarkdown 把 Itinerary 渲染成 Markdown。
@@ -57,6 +57,62 @@ func RenderMarkdown(detail domain.TripDetailResponse) string {
 		b.WriteString("\n## 旅行提示\n")
 		for _, tip := range itinerary.Tips {
 			b.WriteString("- " + tip + "\n")
+		}
+	}
+
+	if itinerary.Evidence != nil {
+		b.WriteString("\n## 证据与来源\n")
+		for _, item := range itinerary.Evidence.Summary {
+			b.WriteString("- " + item + "\n")
+		}
+		for _, item := range itinerary.Evidence.VerificationSummary {
+			b.WriteString("- 验证：" + item + "\n")
+		}
+		for _, warning := range itinerary.Evidence.Warnings {
+			b.WriteString("- 待确认：" + warning + "\n")
+		}
+		if len(itinerary.Evidence.Claims) > 0 {
+			b.WriteString("\n### 候选事实\n")
+			for _, claim := range itinerary.Evidence.Claims {
+				b.WriteString("- [" + claim.Status + " / " + claim.ClaimType)
+				if claim.VerificationStatus != "" {
+					b.WriteString(" / " + claim.VerificationStatus)
+				}
+				b.WriteString("] " + claim.Claim + "（置信度：" + floatToString(claim.Confidence) + "）\n")
+				if claim.VerificationSummary != "" {
+					b.WriteString("  - 验证：" + claim.VerificationSummary + "\n")
+				}
+				if len(claim.VerificationChannels) > 0 {
+					b.WriteString("  - 渠道：" + strings.Join(claim.VerificationChannels, "、") + "\n")
+				}
+				if claim.Reason != "" {
+					b.WriteString("  - 说明：" + claim.Reason + "\n")
+				}
+				if claim.OfficialSourceURL != "" {
+					b.WriteString("  - 官方来源：" + claim.OfficialSourceURL + "\n")
+				}
+				if len(claim.SourceURLs) > 0 {
+					b.WriteString("  - 来源：" + claim.SourceURLs[0] + "\n")
+				}
+			}
+		}
+		if len(itinerary.Evidence.Sources) > 0 {
+			b.WriteString("\n### 在线来源\n")
+			for _, source := range itinerary.Evidence.Sources {
+				label := defaultString(source.Title, source.Host)
+				b.WriteString("- " + label + "（" + source.ReliabilityLabel)
+				if source.VerificationRole != "" {
+					b.WriteString("，" + source.VerificationRole)
+				}
+				if source.SourcePriority > 0 {
+					b.WriteString("，优先级 " + itoa(source.SourcePriority))
+				}
+				b.WriteString("，" + floatToString(source.ReliabilityScore) + "）")
+				if source.URL != "" {
+					b.WriteString("：" + source.URL)
+				}
+				b.WriteString("\n")
+			}
 		}
 	}
 	return b.String()

@@ -4,8 +4,8 @@ import (
 	"context"
 	"time"
 
-	"zhilv-yuntu-go/internal/logging"
-	"zhilv-yuntu-go/internal/rag"
+	"travel-agent-go/internal/logging"
+	"travel-agent-go/internal/rag"
 )
 
 // RAGTool 把攻略检索包装成 Agent 可调用工具。

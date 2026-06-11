@@ -4,9 +4,9 @@ import (
 	"context"
 	"time"
 
-	"zhilv-yuntu-go/internal/domain"
-	"zhilv-yuntu-go/internal/logging"
-	"zhilv-yuntu-go/internal/services"
+	"travel-agent-go/internal/domain"
+	"travel-agent-go/internal/logging"
+	"travel-agent-go/internal/services"
 )
 
 // PlannerTool 把 Planner 策略包装成 Agent 工具。
@@ -41,6 +41,7 @@ func (t *PlannerTool) Generate(ctx context.Context, input PlannerInput) (service
 	)
 	draft, ok, err := t.planner.GenerateDraft(input.Request, input.Contexts, input.DayCount)
 	if err == nil && ok {
+		draft = services.SanitizePlannerDraft(input.Request, input.Contexts, draft, input.DayCount)
 		logging.Info(ctx, "planner tool generate completed",
 			"destination", input.Request.Destination,
 			"planner", "primary",
@@ -70,6 +71,7 @@ func (t *PlannerTool) Generate(ctx context.Context, input PlannerInput) (service
 		)
 		return fallbackDraft, fallbackErr
 	}
+	fallbackDraft = services.SanitizePlannerDraft(input.Request, input.Contexts, fallbackDraft, input.DayCount)
 	logging.Info(ctx, "planner tool generate completed",
 		"destination", input.Request.Destination,
 		"planner", "fallback",

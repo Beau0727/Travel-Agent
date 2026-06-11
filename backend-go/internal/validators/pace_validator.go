@@ -1,6 +1,6 @@
 package validators
 
-import "zhilv-yuntu-go/internal/domain"
+import "travel-agent-go/internal/domain"
 
 type PaceValidator struct{}
 

@@ -8,11 +8,12 @@ import (
 	"strings"
 	"testing"
 
-	"zhilv-yuntu-go/internal/config"
-	"zhilv-yuntu-go/internal/domain"
-	"zhilv-yuntu-go/internal/services"
-	"zhilv-yuntu-go/internal/tools"
-	"zhilv-yuntu-go/internal/validators"
+	"travel-agent-go/internal/config"
+	"travel-agent-go/internal/domain"
+	infrallm "travel-agent-go/internal/infrastructure/llm"
+	"travel-agent-go/internal/services"
+	"travel-agent-go/internal/tools"
+	"travel-agent-go/internal/validators"
 )
 
 func TestToolCallingTravelPlanningAgentRunsModelSelectedTools(t *testing.T) {
@@ -41,10 +42,13 @@ func TestToolCallingTravelPlanningAgentRunsModelSelectedTools(t *testing.T) {
 	planner := services.NewRulePlanner()
 	ragTool := tools.NewRAGTool(rag)
 	plannerTool := tools.NewPlannerTool(planner)
-	mapTool := tools.NewMapTool(config.Config{})
+	mapTool := tools.NewMapTool(config.Config{}, nil)
+	weatherService := services.NewWeatherService(config.Config{}, nil)
+	routeTool := tools.NewRouteTool(services.NewRoutePlanningService(config.Config{}, nil))
 	assembler := services.NewItineraryAssembler()
 	validatorSet := validators.NewDefaultSet()
-	fallback := NewDefaultTravelPlanningAgent(ragTool, plannerTool, mapTool, assembler, validatorSet)
+	webResearchTool := tools.NewWebResearchTool(services.NewWebResearchService(config.Config{}))
+	fallback := NewDefaultTravelPlanningAgent(ragTool, webResearchTool, plannerTool, mapTool, routeTool, weatherService, assembler, validatorSet)
 	agent := NewToolCallingTravelPlanningAgent(
 		config.Config{
 			LLMAPIKey:         "test-key",
@@ -52,11 +56,18 @@ func TestToolCallingTravelPlanningAgentRunsModelSelectedTools(t *testing.T) {
 			LLMModel:          "test-model",
 			LLMTimeoutSeconds: 5,
 		},
+		infrallm.NewOpenAICompatibleClient(config.Config{
+			LLMAPIKey:         "test-key",
+			LLMBaseURL:        server.URL,
+			LLMModel:          "test-model",
+			LLMTimeoutSeconds: 5,
+		}),
 		ragTool,
-		tools.NewWebResearchTool(services.NewWebResearchService(config.Config{})),
+		webResearchTool,
 		plannerTool,
 		mapTool,
-		services.NewWeatherService(),
+		routeTool,
+		weatherService,
 		assembler,
 		validatorSet,
 		fallback,
@@ -129,10 +140,18 @@ func TestToolCallingTravelPlanningAgentRunsWebResearchTool(t *testing.T) {
 
 	ragTool := tools.NewRAGTool(&fakeRetriever{})
 	plannerTool := tools.NewPlannerTool(services.NewRulePlanner())
-	mapTool := tools.NewMapTool(config.Config{})
+	mapTool := tools.NewMapTool(config.Config{}, nil)
+	weatherService := services.NewWeatherService(config.Config{}, nil)
+	routeTool := tools.NewRouteTool(services.NewRoutePlanningService(config.Config{}, nil))
 	assembler := services.NewItineraryAssembler()
 	validatorSet := validators.NewDefaultSet()
-	fallback := NewDefaultTravelPlanningAgent(ragTool, plannerTool, mapTool, assembler, validatorSet)
+	webResearchTool := tools.NewWebResearchTool(services.NewWebResearchService(config.Config{
+		EnableWebResearch:   true,
+		WebSearchEndpoint:   searchServer.URL + "/search",
+		WebResearchTimeout:  5,
+		WebResearchMaxPages: 1,
+	}))
+	fallback := NewDefaultTravelPlanningAgent(ragTool, webResearchTool, plannerTool, mapTool, routeTool, weatherService, assembler, validatorSet)
 	agent := NewToolCallingTravelPlanningAgent(
 		config.Config{
 			LLMAPIKey:           "test-key",
@@ -144,16 +163,18 @@ func TestToolCallingTravelPlanningAgentRunsWebResearchTool(t *testing.T) {
 			WebResearchTimeout:  5,
 			WebResearchMaxPages: 1,
 		},
+		infrallm.NewOpenAICompatibleClient(config.Config{
+			LLMAPIKey:         "test-key",
+			LLMBaseURL:        "http://unused",
+			LLMModel:          "test-model",
+			LLMTimeoutSeconds: 5,
+		}),
 		ragTool,
-		tools.NewWebResearchTool(services.NewWebResearchService(config.Config{
-			EnableWebResearch:   true,
-			WebSearchEndpoint:   searchServer.URL + "/search",
-			WebResearchTimeout:  5,
-			WebResearchMaxPages: 1,
-		})),
+		webResearchTool,
 		plannerTool,
 		mapTool,
-		services.NewWeatherService(),
+		routeTool,
+		weatherService,
 		assembler,
 		validatorSet,
 		fallback,
@@ -167,8 +188,11 @@ func TestToolCallingTravelPlanningAgentRunsWebResearchTool(t *testing.T) {
 	if len(state.RAGContexts) != 1 {
 		t.Fatalf("expected one online context, got %d", len(state.RAGContexts))
 	}
-	if !strings.Contains(state.RAGContexts[0], "Online guide") {
-		t.Fatalf("expected online guide context, got %q", state.RAGContexts[0])
+	if state.EvidenceReport == nil || len(state.EvidenceReport.Sources) != 1 {
+		t.Fatalf("expected online evidence report, got %#v", state.EvidenceReport)
+	}
+	if !strings.Contains(state.RAGContexts[0], "Dali online guide") {
+		t.Fatalf("expected evidence context, got %q", state.RAGContexts[0])
 	}
 }
 

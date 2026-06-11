@@ -4,10 +4,10 @@ import (
 	"context"
 	"time"
 
-	"zhilv-yuntu-go/internal/domain"
-	"zhilv-yuntu-go/internal/logging"
-	"zhilv-yuntu-go/internal/services"
-	"zhilv-yuntu-go/internal/storage"
+	"travel-agent-go/internal/domain"
+	"travel-agent-go/internal/logging"
+	"travel-agent-go/internal/services"
+	"travel-agent-go/internal/storage"
 )
 
 // ItineraryGenerator 是应用层需要的 Agent 能力。

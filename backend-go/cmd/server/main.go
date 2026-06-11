@@ -1,12 +1,13 @@
 package main
 
 import (
-	"log/slog"
+	"fmt"
+	"log"
 	"net/http"
 
-	"zhilv-yuntu-go/internal/bootstrap"
-	"zhilv-yuntu-go/internal/config"
-	"zhilv-yuntu-go/internal/logging"
+	"travel-agent-go/internal/bootstrap"
+	"travel-agent-go/internal/config"
+	"travel-agent-go/internal/logging"
 )
 
 func main() {
@@ -14,10 +15,10 @@ func main() {
 
 	cfg := config.Load()
 	app := bootstrap.NewApp(cfg)
-
 	addr := ":" + cfg.Port
-	slog.Info("Go backend starting", "addr", "http://127.0.0.1"+addr)
+
+	logging.Info(nil, "travel agent backend starting", "addr", addr)
 	if err := http.ListenAndServe(addr, app.HTTPHandler); err != nil {
-		slog.Error("Go backend stopped", "error", err)
+		log.Fatal(fmt.Errorf("listen on %s: %w", addr, err))
 	}
 }

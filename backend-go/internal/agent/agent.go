@@ -5,8 +5,8 @@ import (
 	"fmt"
 	"time"
 
-	"zhilv-yuntu-go/internal/domain"
-	"zhilv-yuntu-go/internal/logging"
+	"travel-agent-go/internal/domain"
+	"travel-agent-go/internal/logging"
 )
 
 // TravelPlanningAgent runs the default fixed-step planning workflow.
@@ -21,24 +21,27 @@ func NewTravelPlanningAgent(steps ...Step) *TravelPlanningAgent {
 func (a *TravelPlanningAgent) Run(ctx context.Context, state *State) error {
 	for _, step := range a.steps {
 		start := time.Now()
-		logging.Info(ctx, "default agent step started", "step", step.Name())
+		startArgs := append([]any{"step", step.Name()}, stepStateLogArgs(state)...)
+		logging.Info(ctx, "default agent step started", startArgs...)
 		state.AddTrace(step.Name(), "started")
 
 		if err := step.Run(ctx, state); err != nil {
 			state.AddTrace(step.Name(), "failed: "+err.Error())
-			logging.Error(ctx, "default agent step failed",
+			errorArgs := append([]any{
 				"step", step.Name(),
 				"duration_ms", time.Since(start).Milliseconds(),
 				"error", err,
-			)
+			}, stepStateLogArgs(state)...)
+			logging.Error(ctx, "default agent step failed", errorArgs...)
 			return fmt.Errorf("%s: %w", step.Name(), err)
 		}
 
 		state.AddTrace(step.Name(), "completed")
-		logging.Info(ctx, "default agent step completed",
+		completedArgs := append([]any{
 			"step", step.Name(),
 			"duration_ms", time.Since(start).Milliseconds(),
-		)
+		}, stepStateLogArgs(state)...)
+		logging.Info(ctx, "default agent step completed", completedArgs...)
 	}
 	return nil
 }
@@ -50,6 +53,13 @@ func (a *TravelPlanningAgent) Generate(ctx context.Context, request domain.TripR
 		"destination", request.Destination,
 		"start_date", request.StartDate,
 		"end_date", request.EndDate,
+		"travelers", request.Travelers,
+		"budget", request.Budget,
+		"preferences", len(request.Preferences),
+		"dietary_preferences", len(request.DietaryPreferences),
+		"pace", request.Pace,
+		"hotel_level", request.HotelLevel,
+		"special_notes_chars", len([]rune(request.SpecialNotes)),
 	)
 
 	state := &State{Request: request}

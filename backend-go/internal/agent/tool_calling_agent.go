@@ -1,22 +1,20 @@
 package agent
 
 import (
-	"bytes"
 	"context"
 	"encoding/json"
 	"errors"
 	"fmt"
-	"io"
-	"net/http"
 	"strings"
 	"time"
 
-	"zhilv-yuntu-go/internal/config"
-	"zhilv-yuntu-go/internal/domain"
-	"zhilv-yuntu-go/internal/logging"
-	"zhilv-yuntu-go/internal/services"
-	"zhilv-yuntu-go/internal/tools"
-	"zhilv-yuntu-go/internal/validators"
+	"travel-agent-go/internal/config"
+	"travel-agent-go/internal/domain"
+	"travel-agent-go/internal/llm"
+	"travel-agent-go/internal/logging"
+	"travel-agent-go/internal/services"
+	"travel-agent-go/internal/tools"
+	"travel-agent-go/internal/validators"
 )
 
 const defaultToolCallingMaxTurns = 8
@@ -25,11 +23,12 @@ const defaultToolCallingMaxTurns = 8
 // tools to call, while Go still owns the actual tool execution and validation.
 type ToolCallingTravelPlanningAgent struct {
 	cfg             config.Config
-	client          *http.Client
+	chatClient      llm.ChatClient
 	ragTool         *tools.RAGTool
 	webResearchTool *tools.WebResearchTool
 	plannerTool     *tools.PlannerTool
 	mapTool         *tools.MapTool
+	routeTool       *tools.RouteTool
 	weatherService  *services.WeatherService
 	assembler       *services.ItineraryAssembler
 	validatorSet    *validators.Set
@@ -39,10 +38,12 @@ type ToolCallingTravelPlanningAgent struct {
 
 func NewToolCallingTravelPlanningAgent(
 	cfg config.Config,
+	chatClient llm.ChatClient,
 	ragTool *tools.RAGTool,
 	webResearchTool *tools.WebResearchTool,
 	plannerTool *tools.PlannerTool,
 	mapTool *tools.MapTool,
+	routeTool *tools.RouteTool,
 	weatherService *services.WeatherService,
 	assembler *services.ItineraryAssembler,
 	validatorSet *validators.Set,
@@ -50,11 +51,12 @@ func NewToolCallingTravelPlanningAgent(
 ) *ToolCallingTravelPlanningAgent {
 	return &ToolCallingTravelPlanningAgent{
 		cfg:             cfg,
-		client:          &http.Client{Timeout: time.Duration(cfg.LLMTimeoutSeconds) * time.Second},
+		chatClient:      chatClient,
 		ragTool:         ragTool,
 		webResearchTool: webResearchTool,
 		plannerTool:     plannerTool,
 		mapTool:         mapTool,
+		routeTool:       routeTool,
 		weatherService:  weatherService,
 		assembler:       assembler,
 		validatorSet:    validatorSet,
@@ -76,7 +78,18 @@ func (a *ToolCallingTravelPlanningAgent) Generate(ctx context.Context, request d
 		"destination", request.Destination,
 		"start_date", request.StartDate,
 		"end_date", request.EndDate,
+		"travelers", request.Travelers,
+		"budget", request.Budget,
+		"preferences", len(request.Preferences),
+		"dietary_preferences", len(request.DietaryPreferences),
+		"pace", request.Pace,
+		"hotel_level", request.HotelLevel,
+		"special_notes_chars", len([]rune(request.SpecialNotes)),
 		"model", a.cfg.LLMModel,
+		"web_research_enabled", a.cfg.EnableWebResearch,
+		"web_search_provider", a.cfg.WebSearchProvider,
+		"web_search_endpoint_configured", strings.TrimSpace(a.cfg.WebSearchEndpoint) != "",
+		"web_search_api_key_configured", strings.TrimSpace(a.cfg.WebSearchAPIKey) != "",
 	)
 
 	state := &State{
@@ -103,6 +116,7 @@ func (a *ToolCallingTravelPlanningAgent) Generate(ctx context.Context, request d
 		return a.fallback.Generate(ctx, request)
 	}
 
+	a.autoEnrichItinerary(ctx, state)
 	if len(state.ValidationIssues) > 0 {
 		logging.Info(ctx, "tool-calling agent repairing validation issues",
 			"issues", len(state.ValidationIssues),
@@ -136,6 +150,35 @@ func (a *ToolCallingTravelPlanningAgent) Generate(ctx context.Context, request d
 	return state.FinalItinerary, nil
 }
 
+func (a *ToolCallingTravelPlanningAgent) autoEnrichItinerary(ctx context.Context, state *State) {
+	if !hasUsableItinerary(state.FinalItinerary) {
+		return
+	}
+	if state.WeatherForecast == nil && a.weatherService != nil {
+		forecast := a.weatherService.Forecast(ctx, state.Request.Destination)
+		state.WeatherForecast = &forecast
+		contextText := formatWeatherContext(forecast)
+		if contextText != "" {
+			state.RAGContexts = appendUniqueStrings(state.RAGContexts, contextText)
+		}
+		state.AddTrace("auto_weather", "loaded weather for "+state.Request.Destination)
+	}
+	if a.mapTool != nil {
+		if err := a.mapTool.EnrichItinerary(ctx, &state.FinalItinerary); err != nil {
+			state.AddTrace("auto_enrich_map", "map enrichment skipped: "+err.Error())
+		} else {
+			state.AddTrace("auto_enrich_map", "map enrichment completed")
+		}
+	}
+	if a.routeTool != nil {
+		if err := a.routeTool.Enrich(ctx, &state.FinalItinerary, state.WeatherForecast); err != nil {
+			state.AddTrace("auto_enrich_routes", "route enrichment skipped: "+err.Error())
+		} else {
+			state.AddTrace("auto_enrich_routes", "route enrichment completed")
+		}
+	}
+}
+
 func (a *ToolCallingTravelPlanningAgent) runToolLoop(ctx context.Context, state *State) error {
 	messages := []toolChatMessage{
 		{Role: "system", Content: a.systemPrompt()},
@@ -147,6 +190,11 @@ func (a *ToolCallingTravelPlanningAgent) runToolLoop(ctx context.Context, state 
 		logging.Info(ctx, "tool-calling turn started",
 			"turn", turn+1,
 			"messages", len(messages),
+			"max_turns", a.maxTurns,
+			"contexts", len(state.RAGContexts),
+			"evidence_sources", evidenceSourceCount(state),
+			"evidence_claims", evidenceClaimCount(state),
+			"final_days", len(state.FinalItinerary.Days),
 		)
 		assistantMessage, err := a.chat(ctx, messages)
 		if err != nil {
@@ -175,6 +223,7 @@ func (a *ToolCallingTravelPlanningAgent) runToolLoop(ctx context.Context, state 
 		logging.Info(ctx, "tool-calling model selected tools",
 			"turn", turn+1,
 			"tool_calls", len(assistantMessage.ToolCalls),
+			"tools", strings.Join(selectedToolNames(assistantMessage.ToolCalls), ","),
 		)
 
 		for i := range assistantMessage.ToolCalls {
@@ -184,6 +233,9 @@ func (a *ToolCallingTravelPlanningAgent) runToolLoop(ctx context.Context, state 
 			if assistantMessage.ToolCalls[i].Type == "" {
 				assistantMessage.ToolCalls[i].Type = "function"
 			}
+			logging.Info(ctx, "tool-calling selected tool arguments",
+				append([]any{"turn", turn + 1, "index", i + 1}, toolCallLogArgs(assistantMessage.ToolCalls[i])...)...,
+			)
 		}
 		messages = append(messages, assistantMessage)
 
@@ -220,36 +272,16 @@ func (a *ToolCallingTravelPlanningAgent) runToolLoop(ctx context.Context, state 
 
 func (a *ToolCallingTravelPlanningAgent) chat(ctx context.Context, messages []toolChatMessage) (toolChatMessage, error) {
 	start := time.Now()
-	baseURL := strings.TrimRight(a.cfg.LLMBaseURL, "/")
-	if baseURL == "" {
-		baseURL = "https://dashscope.aliyuncs.com/compatible-mode/v1"
+	if a.chatClient == nil {
+		return toolChatMessage{}, errors.New("llm chat client is not configured")
 	}
-
-	body := toolChatRequest{
+	assistantMessage, err := a.chatClient.Chat(ctx, llm.ChatRequest{
 		Model:       a.cfg.LLMModel,
 		Messages:    messages,
 		Tools:       toolDefinitions(),
 		ToolChoice:  "auto",
 		Temperature: 0.2,
-	}
-	data, err := json.Marshal(body)
-	if err != nil {
-		return toolChatMessage{}, err
-	}
-
-	req, err := http.NewRequestWithContext(ctx, http.MethodPost, baseURL+"/chat/completions", bytes.NewReader(data))
-	if err != nil {
-		return toolChatMessage{}, err
-	}
-	req.Header.Set("Authorization", "Bearer "+a.cfg.LLMAPIKey)
-	req.Header.Set("Content-Type", "application/json")
-
-	logging.Info(ctx, "tool-calling chat request started",
-		"model", a.cfg.LLMModel,
-		"messages", len(messages),
-		"url", baseURL+"/chat/completions",
-	)
-	resp, err := a.client.Do(req)
+	})
 	if err != nil {
 		logging.Error(ctx, "tool-calling chat request failed",
 			"model", a.cfg.LLMModel,
@@ -258,64 +290,44 @@ func (a *ToolCallingTravelPlanningAgent) chat(ctx context.Context, messages []to
 		)
 		return toolChatMessage{}, err
 	}
-	defer resp.Body.Close()
-
-	respBody, err := io.ReadAll(resp.Body)
-	if err != nil {
-		return toolChatMessage{}, err
-	}
-	if resp.StatusCode < 200 || resp.StatusCode >= 300 {
-		logging.Error(ctx, "tool-calling chat response failed",
-			"model", a.cfg.LLMModel,
-			"status", resp.StatusCode,
-			"duration_ms", time.Since(start).Milliseconds(),
-			"error", trimBody(respBody),
-		)
-		return toolChatMessage{}, errors.New(trimBody(respBody))
-	}
-
-	var parsed toolChatResponse
-	if err := json.Unmarshal(respBody, &parsed); err != nil {
-		return toolChatMessage{}, err
-	}
-	if len(parsed.Choices) == 0 {
-		return toolChatMessage{}, errors.New("tool-calling response has no choices")
-	}
 	logging.Info(ctx, "tool-calling chat request completed",
 		"model", a.cfg.LLMModel,
-		"status", resp.StatusCode,
 		"duration_ms", time.Since(start).Milliseconds(),
-		"choices", len(parsed.Choices),
 	)
-	return parsed.Choices[0].Message, nil
+	return assistantMessage, nil
 }
 
 func (a *ToolCallingTravelPlanningAgent) executeToolCall(ctx context.Context, state *State, call toolCall) (string, bool) {
 	name := ToolName(call.Function.Name)
 	start := time.Now()
-	logging.Info(ctx, "tool call started",
-		"tool", string(name),
-		"tool_call_id", call.ID,
+	startArgs := append(toolCallLogArgs(call),
+		"contexts", len(state.RAGContexts),
+		"evidence_sources", evidenceSourceCount(state),
+		"evidence_claims", evidenceClaimCount(state),
+		"final_days", len(state.FinalItinerary.Days),
 	)
+	logging.Info(ctx, "tool call started", startArgs...)
 	state.AddTrace("tool_call", "calling "+string(name))
 
 	result, done := a.runTool(ctx, state, call)
 	state.AddToolObservation(NewToolObservation(call, result))
 	if result.OK {
-		logging.Info(ctx, "tool call completed",
+		completedArgs := append([]any{
 			"tool", string(name),
 			"tool_call_id", call.ID,
 			"done", done,
 			"duration_ms", time.Since(start).Milliseconds(),
-		)
+		}, stepStateLogArgs(state)...)
+		logging.Info(ctx, "tool call completed", completedArgs...)
 	} else {
-		logging.Warn(ctx, "tool call failed",
+		failedArgs := append([]any{
 			"tool", string(name),
 			"tool_call_id", call.ID,
 			"done", done,
 			"duration_ms", time.Since(start).Milliseconds(),
 			"error", result.Error,
-		)
+		}, stepStateLogArgs(state)...)
+		logging.Warn(ctx, "tool call failed", failedArgs...)
 	}
 	return result.JSON(), done
 }
@@ -333,6 +345,8 @@ func (a *ToolCallingTravelPlanningAgent) runTool(ctx context.Context, state *Sta
 		return a.callGenerateItineraryDraft(ctx, state, call.Function.Arguments), false
 	case ToolEnrichMap:
 		return a.callEnrichMap(ctx, state), false
+	case ToolEnrichRoutes:
+		return a.callEnrichRoutes(ctx, state), false
 	case ToolValidateItinerary:
 		return a.callValidateItinerary(ctx, state), false
 	case ToolRepairItinerary:
@@ -359,13 +373,18 @@ func (a *ToolCallingTravelPlanningAgent) callWebResearch(ctx context.Context, st
 	args.Normalize(state.Request)
 	logging.Info(ctx, "web research tool requested",
 		"destination", args.Destination,
-		"query", args.Query,
+		"query", logging.SafeText(args.Query, 220),
+		"query_chars", len([]rune(args.Query)),
 		"top_k", args.TopK,
+		"web_research_enabled", a.cfg.EnableWebResearch,
+		"web_search_provider", a.cfg.WebSearchProvider,
+		"web_search_endpoint_configured", strings.TrimSpace(a.cfg.WebSearchEndpoint) != "",
+		"web_search_api_key_configured", strings.TrimSpace(a.cfg.WebSearchAPIKey) != "",
 	)
 	if a.webResearchTool == nil {
 		logging.Warn(ctx, "web research tool unavailable",
 			"destination", args.Destination,
-			"query", args.Query,
+			"query", logging.SafeText(args.Query, 220),
 		)
 		return NewToolOK(ToolWebResearch, WebResearchToolResult{
 			Query:    args.Query,
@@ -381,14 +400,13 @@ func (a *ToolCallingTravelPlanningAgent) callWebResearch(ctx context.Context, st
 	if err != nil {
 		logging.Warn(ctx, "web research tool failed",
 			"destination", args.Destination,
-			"query", args.Query,
+			"query", logging.SafeText(args.Query, 220),
 			"error", err,
 		)
 		return NewToolError(ToolWebResearch, err)
 	}
 
 	digests := make([]WebResearchSourceDigest, 0, len(result.Sources))
-	contexts := make([]string, 0, len(result.Sources))
 	for _, source := range result.Sources {
 		digest := WebResearchSourceDigest{
 			Title:   source.Title,
@@ -396,19 +414,25 @@ func (a *ToolCallingTravelPlanningAgent) callWebResearch(ctx context.Context, st
 			Snippet: source.Snippet,
 		}
 		digests = append(digests, digest)
-		contexts = append(contexts, formatWebResearchContext(digest))
 	}
-	state.RAGContexts = appendUniqueStrings(state.RAGContexts, contexts...)
-	state.AddTrace(string(ToolWebResearch), fmt.Sprintf("found %d online sources", len(digests)))
+	state.EvidenceReport = &result.Evidence
+	if evidenceContext := services.FormatEvidenceContext(result.Evidence); evidenceContext != "" {
+		state.RAGContexts = appendUniqueStrings(state.RAGContexts, evidenceContext)
+	}
+	state.AddTrace(string(ToolWebResearch), fmt.Sprintf("found %d online sources and %d evidence claims", len(digests), len(result.Evidence.Claims)))
 	logging.Info(ctx, "web research tool completed",
-		"query", result.Query,
+		"query", logging.SafeText(result.Query, 220),
 		"sources", len(digests),
-		"contexts", len(contexts),
+		"claims", len(result.Evidence.Claims),
+		"warnings", len(result.Evidence.Warnings),
+		"contexts", len(state.RAGContexts),
+		"context_chars", totalContextChars(state.RAGContexts),
 	)
 	return NewToolOK(ToolWebResearch, WebResearchToolResult{
-		Query:   result.Query,
-		Count:   len(digests),
-		Sources: digests,
+		Query:    result.Query,
+		Count:    len(digests),
+		Sources:  digests,
+		Evidence: result.Evidence,
 	})
 }
 
@@ -422,6 +446,7 @@ func (a *ToolCallingTravelPlanningAgent) callRAGSearch(ctx context.Context, stat
 		"destination", args.Destination,
 		"preferences", len(args.Preferences),
 		"pace", args.Pace,
+		"special_notes_chars", len([]rune(args.SpecialNotes)),
 		"top_k", args.TopK,
 	)
 
@@ -444,6 +469,9 @@ func (a *ToolCallingTravelPlanningAgent) callRAGSearch(ctx context.Context, stat
 	logging.Info(ctx, "rag search tool completed",
 		"destination", args.Destination,
 		"contexts", len(contexts),
+		"context_chars", totalContextChars(contexts),
+		"state_contexts", len(state.RAGContexts),
+		"state_context_chars", totalContextChars(state.RAGContexts),
 	)
 	return NewToolOK(ToolRAGSearch, RAGSearchToolResult{
 		Count:    len(contexts),
@@ -463,6 +491,7 @@ func (a *ToolCallingTravelPlanningAgent) callWeatherForecast(ctx context.Context
 	}
 
 	forecast := a.weatherService.Forecast(ctx, args.City)
+	state.WeatherForecast = &forecast
 	contextText := formatWeatherContext(forecast)
 	if contextText != "" {
 		state.RAGContexts = appendUniqueStrings(state.RAGContexts, contextText)
@@ -493,6 +522,9 @@ func (a *ToolCallingTravelPlanningAgent) callGenerateItineraryDraft(ctx context.
 		"destination", state.Request.Destination,
 		"day_count", dayCount,
 		"contexts", len(state.RAGContexts),
+		"context_chars", totalContextChars(state.RAGContexts),
+		"evidence_sources", evidenceSourceCount(state),
+		"evidence_claims", evidenceClaimCount(state),
 	)
 
 	draft, err := a.plannerTool.Generate(ctx, tools.PlannerInput{
@@ -510,7 +542,7 @@ func (a *ToolCallingTravelPlanningAgent) callGenerateItineraryDraft(ctx context.
 	}
 
 	state.PlannerDraft = draft
-	itinerary := a.assembler.Assemble(state.Request, draft, state.RAGContexts, dayCount)
+	itinerary := a.assembler.AssembleWithEvidence(state.Request, draft, state.RAGContexts, dayCount, state.EvidenceReport)
 	state.DraftItinerary = itinerary
 	state.FinalItinerary = itinerary
 	state.AddTrace(string(ToolGenerateItineraryDraft), fmt.Sprintf("generated %d days", len(itinerary.Days)))
@@ -551,6 +583,37 @@ func (a *ToolCallingTravelPlanningAgent) callEnrichMap(ctx context.Context, stat
 		"days", len(state.FinalItinerary.Days),
 	)
 	return NewToolOK(ToolEnrichMap, EnrichMapToolResult{Days: len(state.FinalItinerary.Days)})
+}
+
+func (a *ToolCallingTravelPlanningAgent) callEnrichRoutes(ctx context.Context, state *State) ToolExecutionResult {
+	if !hasUsableItinerary(state.FinalItinerary) {
+		return NewToolError(ToolEnrichRoutes, errors.New("no itinerary to enrich"))
+	}
+	if a.routeTool == nil {
+		return NewToolError(ToolEnrichRoutes, errors.New("route tool is not configured"))
+	}
+	logging.Info(ctx, "route enrich tool requested",
+		"trip_id", state.FinalItinerary.TripID,
+		"days", len(state.FinalItinerary.Days),
+	)
+	if err := a.routeTool.Enrich(ctx, &state.FinalItinerary, state.WeatherForecast); err != nil {
+		logging.Warn(ctx, "route enrich tool failed",
+			"trip_id", state.FinalItinerary.TripID,
+			"error", err,
+		)
+		return NewToolError(ToolEnrichRoutes, err)
+	}
+	legs := countTransportLegs(state.FinalItinerary)
+	state.AddTrace(string(ToolEnrichRoutes), "route enrichment completed")
+	logging.Info(ctx, "route enrich tool completed",
+		"trip_id", state.FinalItinerary.TripID,
+		"days", len(state.FinalItinerary.Days),
+		"transport_legs", legs,
+	)
+	return NewToolOK(ToolEnrichRoutes, EnrichRoutesToolResult{
+		Days:          len(state.FinalItinerary.Days),
+		TransportLegs: legs,
+	})
 }
 
 func (a *ToolCallingTravelPlanningAgent) callValidateItinerary(ctx context.Context, state *State) ToolExecutionResult {
@@ -609,11 +672,14 @@ func (a *ToolCallingTravelPlanningAgent) callRepairItinerary(ctx context.Context
 func (a *ToolCallingTravelPlanningAgent) systemPrompt() string {
 	return strings.Join([]string{
 		"You are a travel-planning agent. You must decide which tools are needed and call them.",
-		"Use rag_search when local travel guide context would improve the plan.",
-		"Use web_research when current online travel guides, blog posts, or public攻略 pages would improve attraction, food, route, or caution details.",
+		"Prefer web_research first for current online travel evidence about attractions, food, route, ticketing, official notices, map/local status, and cautions.",
+		"Use rag_search after web_research when local markdown travel-guide context can supplement online evidence.",
+		"Treat web_research evidence statuses strictly: supported claims may guide the plan, needs_review claims must be presented as uncertain or left as reminders.",
+		"For opening hours, ticket prices, reservation rules, business status, and limits, prefer official_cross_verified claims; if missing, tell the user to verify official/map/ticketing channels before departure.",
 		"Use weather_forecast when weather may affect itinerary tips, clothes, transport, or pacing.",
 		"Call generate_itinerary_draft to create the itinerary after gathering useful context.",
 		"Call enrich_map only after an itinerary exists and map/POI enrichment is useful.",
+		"Call enrich_routes after enrich_map when real route distance, duration, or route polyline would improve the plan.",
 		"Call validate_itinerary after generating or changing an itinerary.",
 		"Call repair_itinerary when validation reports issues.",
 		"Call finish_itinerary only when the itinerary is ready for the user.",
@@ -657,13 +723,13 @@ func toolDefinitions() []toolDefinition {
 			Type: "function",
 			Function: toolFunctionDefinition{
 				Name:        string(ToolWebResearch),
-				Description: "Search online travel guide pages, fetch candidate pages, and extract useful snippets for itinerary planning.",
+				Description: "Search online travel evidence, prioritizing official/website pages, map/local service pages, ticketing/reservation pages, and then travel guides.",
 				Parameters: rawSchema(`{
 					"type": "object",
 					"properties": {
 						"destination": {"type": "string"},
-						"query": {"type": "string", "description": "Search query, for example: 大理 旅游攻略 美食 古镇 三日游"},
-						"top_k": {"type": "integer", "minimum": 1, "maximum": 5}
+						"query": {"type": "string", "description": "Search query, for example: 大理 官网 官方 地图 门票 开放时间 预约 旅游攻略"},
+						"top_k": {"type": "integer", "minimum": 1, "maximum": 8}
 					},
 					"additionalProperties": false
 				}`),
@@ -702,6 +768,14 @@ func toolDefinitions() []toolDefinition {
 			Function: toolFunctionDefinition{
 				Name:        string(ToolEnrichMap),
 				Description: "Enrich generated spots with map POI data such as address, coordinates, image URL, and POI ID.",
+				Parameters:  emptyObjectSchema(),
+			},
+		},
+		{
+			Type: "function",
+			Function: toolFunctionDefinition{
+				Name:        string(ToolEnrichRoutes),
+				Description: "Enrich generated itinerary transport legs with real AMap route distance, duration, summary, and route polyline.",
 				Parameters:  emptyObjectSchema(),
 			},
 		},
@@ -827,4 +901,12 @@ func trimBody(body []byte) string {
 		return "empty response body"
 	}
 	return text
+}
+
+func countTransportLegs(itinerary domain.Itinerary) int {
+	count := 0
+	for _, day := range itinerary.Days {
+		count += len(day.Transport)
+	}
+	return count
 }

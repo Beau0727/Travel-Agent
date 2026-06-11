@@ -2,36 +2,29 @@ package tools
 
 import (
 	"context"
-	"encoding/json"
 	"errors"
-	"net/http"
 	"net/url"
 	"strconv"
 	"strings"
 	"time"
 
-	"zhilv-yuntu-go/internal/config"
-	"zhilv-yuntu-go/internal/domain"
-	"zhilv-yuntu-go/internal/logging"
+	"travel-agent-go/internal/config"
+	"travel-agent-go/internal/domain"
+	infraamap "travel-agent-go/internal/infrastructure/amap"
+	"travel-agent-go/internal/logging"
 )
 
 // MapTool 是 Agent 的地图工具。
 // 它负责把 itinerary 里的景点名称转换成高德 POI 信息，并补充地址、经纬度和图片。
 type MapTool struct {
 	enabled bool
-	apiKey  string
-	baseURL string
-	client  *http.Client
+	amap    *infraamap.Client
 }
 
-func NewMapTool(cfg config.Config) *MapTool {
+func NewMapTool(cfg config.Config, amap *infraamap.Client) *MapTool {
 	return &MapTool{
 		enabled: cfg.EnableAmapEnrich && cfg.AmapAPIKey != "",
-		apiKey:  cfg.AmapAPIKey,
-		baseURL: strings.TrimRight(cfg.AmapBaseURL, "/"),
-		client: &http.Client{
-			Timeout: 20 * time.Second,
-		},
+		amap:    amap,
 	}
 }
 
@@ -42,6 +35,9 @@ func (t *MapTool) EnrichItinerary(ctx context.Context, itinerary *domain.Itinera
 			"destination", itinerary.Destination,
 		)
 		return nil
+	}
+	if t.amap == nil || !t.amap.Enabled() {
+		return errors.New("amap client is disabled")
 	}
 	start := time.Now()
 	lookups := 0
@@ -106,6 +102,7 @@ func (t *MapTool) EnrichItinerary(ctx context.Context, itinerary *domain.Itinera
 			}
 			meal.Location = firstNonEmpty(meal.Location, itinerary.Destination)
 			meal.Address = firstNonEmpty(poi.Address, meal.Address, meal.Location)
+			meal.ImageURL = firstNonEmpty(poi.ImageURL, meal.ImageURL)
 			meal.POIID = firstNonEmpty(poi.ID, meal.POIID)
 			meal.Latitude = poi.Latitude
 			meal.Longitude = poi.Longitude
@@ -135,51 +132,26 @@ func (t *MapTool) searchFirstPOI(ctx context.Context, keyword string, city strin
 		return nil, nil
 	}
 	params := url.Values{}
-	params.Set("key", t.apiKey)
 	params.Set("keywords", keyword)
 	params.Set("city", city)
-	params.Set("offset", "1")
+	params.Set("offset", "5")
 	params.Set("page", "1")
 	params.Set("extensions", "all")
 
-	req, err := http.NewRequestWithContext(ctx, http.MethodGet, t.baseURL+"/place/text?"+params.Encode(), nil)
-	if err != nil {
-		return nil, err
-	}
 	start := time.Now()
 	logging.Info(ctx, "amap poi request started",
 		"keyword", keyword,
 		"city", city,
 	)
-	resp, err := t.client.Do(req)
-	if err != nil {
-		logging.Warn(ctx, "amap poi request failed",
-			"keyword", keyword,
-			"city", city,
-			"duration_ms", time.Since(start).Milliseconds(),
-			"error", err,
-		)
-		return nil, err
-	}
-	defer resp.Body.Close()
-
 	var payload struct {
-		Status string `json:"status"`
-		Info   string `json:"info"`
-		POIs   []struct {
-			ID       string `json:"id"`
-			Address  any    `json:"address"`
-			Location string `json:"location"`
-			Photos   []struct {
-				URL string `json:"url"`
-			} `json:"photos"`
-		} `json:"pois"`
+		Status string           `json:"status"`
+		Info   string           `json:"info"`
+		POIs   []amapPOIPayload `json:"pois"`
 	}
-	if err := json.NewDecoder(resp.Body).Decode(&payload); err != nil {
+	if err := t.amap.GetV3(ctx, "/place/text", params, &payload); err != nil {
 		logging.Warn(ctx, "amap poi response parse failed",
 			"keyword", keyword,
 			"city", city,
-			"status", resp.StatusCode,
 			"duration_ms", time.Since(start).Milliseconds(),
 			"error", err,
 		)
@@ -189,7 +161,6 @@ func (t *MapTool) searchFirstPOI(ctx context.Context, keyword string, city strin
 		logging.Warn(ctx, "amap poi response rejected",
 			"keyword", keyword,
 			"city", city,
-			"status", resp.StatusCode,
 			"info", payload.Info,
 			"duration_ms", time.Since(start).Milliseconds(),
 		)
@@ -199,22 +170,17 @@ func (t *MapTool) searchFirstPOI(ctx context.Context, keyword string, city strin
 		logging.Info(ctx, "amap poi response empty",
 			"keyword", keyword,
 			"city", city,
-			"status", resp.StatusCode,
 			"duration_ms", time.Since(start).Milliseconds(),
 		)
 		return nil, nil
 	}
 
-	first := payload.POIs[0]
+	first := bestAmapPOI(payload.POIs)
 	lat, lng := splitAmapLocation(first.Location)
-	imageURL := ""
-	if len(first.Photos) > 0 {
-		imageURL = first.Photos[0].URL
-	}
+	imageURL := firstAmapPhotoURL(first.Photos)
 	logging.Info(ctx, "amap poi request completed",
 		"keyword", keyword,
 		"city", city,
-		"status", resp.StatusCode,
 		"pois", len(payload.POIs),
 		"poi_id", first.ID,
 		"duration_ms", time.Since(start).Milliseconds(),
@@ -226,6 +192,43 @@ func (t *MapTool) searchFirstPOI(ctx context.Context, keyword string, city strin
 		Latitude:  lat,
 		Longitude: lng,
 	}, nil
+}
+
+type amapPOIPayload struct {
+	ID       string `json:"id"`
+	Address  any    `json:"address"`
+	Location string `json:"location"`
+	Photos   []struct {
+		URL string `json:"url"`
+	} `json:"photos"`
+}
+
+func bestAmapPOI(pois []amapPOIPayload) amapPOIPayload {
+	if len(pois) == 0 {
+		return amapPOIPayload{}
+	}
+	for _, poi := range pois {
+		if firstAmapPhotoURL(poi.Photos) != "" {
+			return poi
+		}
+	}
+	return pois[0]
+}
+
+func firstAmapPhotoURL(photos []struct {
+	URL string `json:"url"`
+}) string {
+	for _, photo := range photos {
+		url := strings.TrimSpace(photo.URL)
+		if url == "" {
+			continue
+		}
+		if strings.HasPrefix(url, "http://") {
+			return "https://" + strings.TrimPrefix(url, "http://")
+		}
+		return url
+	}
+	return ""
 }
 
 func splitAmapLocation(location string) (*float64, *float64) {

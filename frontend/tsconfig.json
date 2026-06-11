@@ -4,6 +4,7 @@
     "useDefineForClassFields": true,
     "module": "ESNext",
     "moduleResolution": "Node",
+    "ignoreDeprecations": "5.0",
     "strict": true,
     "jsx": "preserve",
     "resolveJsonModule": true,
@@ -16,3 +17,4 @@
   "include": ["src/**/*.ts", "src/**/*.tsx", "src/**/*.vue"],
   "references": []
 }
+

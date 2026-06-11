@@ -1,0 +1,45 @@
+{
+  "profiles": [
+    {
+      "name": "simple_markdown",
+      "description": "旧版/简单 RAG：只使用本地 Markdown 词法检索",
+      "backend": "markdown",
+      "disable_reranker": true
+    },
+    {
+      "name": "qdrant_bge_m3",
+      "description": "纯 dense 向量召回，embedding=bge-m3",
+      "backend": "qdrant",
+      "qdrant_collection": "travel_guides",
+      "embedding_model": "bge-m3",
+      "embedding_dim": 1024,
+      "disable_reranker": true
+    },
+    {
+      "name": "hybrid_bge_m3_rrf",
+      "description": "高级 RAG：dense + lexical + RRF，不启用重排",
+      "backend": "hybrid",
+      "qdrant_collection": "travel_guides",
+      "embedding_model": "bge-m3",
+      "embedding_dim": 1024,
+      "candidate_k": 40,
+      "rrf_k": 60,
+      "query_variants": 3,
+      "disable_reranker": true
+    },
+    {
+      "name": "hybrid_bge_m3_reranker",
+      "description": "高级 RAG：dense + lexical + RRF + bge reranker",
+      "backend": "hybrid",
+      "qdrant_collection": "travel_guides",
+      "embedding_model": "bge-m3",
+      "embedding_dim": 1024,
+      "candidate_k": 40,
+      "rrf_k": 60,
+      "query_variants": 3,
+      "reranker_url": "http://127.0.0.1:9001/rerank",
+      "reranker_model": "bge-reranker-v2-m3",
+      "reranker_timeout_seconds": 30
+    }
+  ]
+}

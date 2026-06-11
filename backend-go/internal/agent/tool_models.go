@@ -5,7 +5,8 @@ import (
 	"fmt"
 	"strings"
 
-	"zhilv-yuntu-go/internal/domain"
+	"travel-agent-go/internal/domain"
+	"travel-agent-go/internal/llm"
 )
 
 type ToolName string
@@ -16,6 +17,7 @@ const (
 	ToolWeatherForecast        ToolName = "weather_forecast"
 	ToolGenerateItineraryDraft ToolName = "generate_itinerary_draft"
 	ToolEnrichMap              ToolName = "enrich_map"
+	ToolEnrichRoutes           ToolName = "enrich_routes"
 	ToolValidateItinerary      ToolName = "validate_itinerary"
 	ToolRepairItinerary        ToolName = "repair_itinerary"
 	ToolFinishItinerary        ToolName = "finish_itinerary"
@@ -40,10 +42,10 @@ func (a *WebResearchToolArgs) Normalize(request domain.TripRequest) {
 		a.Destination = request.Destination
 	}
 	if strings.TrimSpace(a.Query) == "" && a.Destination != "" {
-		a.Query = a.Destination + " 旅游攻略 景点 美食 行程"
+		a.Query = a.Destination + " 旅游攻略 官网 官方 地图 门票 开放时间 预约 景点 美食 行程"
 	}
 	if a.TopK <= 0 {
-		a.TopK = 3
+		a.TopK = 6
 	}
 }
 
@@ -95,6 +97,7 @@ type WebResearchToolResult struct {
 	Query    string                    `json:"query"`
 	Count    int                       `json:"count"`
 	Sources  []WebResearchSourceDigest `json:"sources"`
+	Evidence domain.EvidenceReport     `json:"evidence,omitempty"`
 	Disabled bool                      `json:"disabled,omitempty"`
 }
 
@@ -118,6 +121,11 @@ type GenerateItineraryDraftToolResult struct {
 
 type EnrichMapToolResult struct {
 	Days int `json:"days"`
+}
+
+type EnrichRoutesToolResult struct {
+	Days          int `json:"days"`
+	TransportLegs int `json:"transport_legs"`
 }
 
 type ValidateItineraryToolResult struct {
@@ -218,31 +226,8 @@ type toolChatChoice struct {
 	Message toolChatMessage `json:"message"`
 }
 
-type toolChatMessage struct {
-	Role       string     `json:"role"`
-	Content    string     `json:"content,omitempty"`
-	ToolCalls  []toolCall `json:"tool_calls,omitempty"`
-	ToolCallID string     `json:"tool_call_id,omitempty"`
-}
-
-type toolCall struct {
-	ID       string           `json:"id,omitempty"`
-	Type     string           `json:"type,omitempty"`
-	Function toolCallFunction `json:"function"`
-}
-
-type toolCallFunction struct {
-	Name      string `json:"name"`
-	Arguments string `json:"arguments"`
-}
-
-type toolDefinition struct {
-	Type     string                 `json:"type"`
-	Function toolFunctionDefinition `json:"function"`
-}
-
-type toolFunctionDefinition struct {
-	Name        string          `json:"name"`
-	Description string          `json:"description"`
-	Parameters  json.RawMessage `json:"parameters"`
-}
+type toolChatMessage = llm.ChatMessage
+type toolCall = llm.ToolCall
+type toolCallFunction = llm.ToolCallFunction
+type toolDefinition = llm.ToolDefinition
+type toolFunctionDefinition = llm.ToolFunctionDefinition

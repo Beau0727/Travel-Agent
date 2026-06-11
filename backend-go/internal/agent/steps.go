@@ -2,12 +2,13 @@ package agent
 
 import (
 	"context"
+	"strings"
 	"time"
 
-	"zhilv-yuntu-go/internal/domain"
-	"zhilv-yuntu-go/internal/services"
-	"zhilv-yuntu-go/internal/tools"
-	"zhilv-yuntu-go/internal/validators"
+	"travel-agent-go/internal/domain"
+	"travel-agent-go/internal/services"
+	"travel-agent-go/internal/tools"
+	"travel-agent-go/internal/validators"
 )
 
 // NewDefaultTravelPlanningAgent 组装默认工作流。
@@ -15,17 +16,23 @@ import (
 // 需求理解 -> RAG 工具 -> Planner 工具 -> Itinerary 组装 -> Validator -> 修正 -> 输出。
 func NewDefaultTravelPlanningAgent(
 	ragTool *tools.RAGTool,
+	webResearchTool *tools.WebResearchTool,
 	plannerTool *tools.PlannerTool,
 	mapTool *tools.MapTool,
+	routeTool *tools.RouteTool,
+	weatherService *services.WeatherService,
 	assembler *services.ItineraryAssembler,
 	validatorSet *validators.Set,
 ) *TravelPlanningAgent {
 	return NewTravelPlanningAgent(
 		NewStepFunc("understand_request", understandRequestStep),
+		NewStepFunc("research_online_evidence", researchOnlineEvidenceStep(webResearchTool)),
 		NewStepFunc("retrieve_context", retrieveContextStep(ragTool)),
+		NewStepFunc("load_weather", loadWeatherStep(weatherService)),
 		NewStepFunc("generate_draft", generateDraftStep(plannerTool)),
 		NewStepFunc("assemble_itinerary", assembleItineraryStep(assembler)),
 		NewStepFunc("enrich_map", enrichMapStep(mapTool)),
+		NewStepFunc("enrich_routes", enrichRoutesStep(routeTool)),
 		NewStepFunc("validate_itinerary", validateItineraryStep(validatorSet)),
 		NewStepFunc("repair_itinerary", repairItineraryStep),
 		NewStepFunc("finalize", finalizeStep),
@@ -36,6 +43,33 @@ func understandRequestStep(ctx context.Context, state *State) error {
 	state.DayCount = calcDayCount(state.Request.StartDate, state.Request.EndDate)
 	state.AddTrace("understand_request", "识别目的地："+state.Request.Destination)
 	return nil
+}
+
+func researchOnlineEvidenceStep(webResearchTool *tools.WebResearchTool) func(ctx context.Context, state *State) error {
+	return func(ctx context.Context, state *State) error {
+		if webResearchTool == nil || state.Request.Destination == "" {
+			return nil
+		}
+		result, err := webResearchTool.Research(ctx, tools.WebResearchInput{
+			Destination: state.Request.Destination,
+			Query:       buildOnlineResearchQuery(state.Request),
+			TopK:        6,
+		})
+		if err != nil {
+			state.AddTrace("research_online_evidence", "联网资料收集失败，降级使用本地资料")
+			return nil
+		}
+		if len(result.Evidence.Sources) == 0 && len(result.Evidence.Claims) == 0 {
+			state.AddTrace("research_online_evidence", "未获得可用联网证据")
+			return nil
+		}
+		state.EvidenceReport = &result.Evidence
+		if evidenceContext := services.FormatEvidenceContext(result.Evidence); evidenceContext != "" {
+			state.RAGContexts = appendUniqueStrings(state.RAGContexts, evidenceContext)
+		}
+		state.AddTrace("research_online_evidence", "在线证据来源："+itoa(len(result.Evidence.Sources))+"，候选事实："+itoa(len(result.Evidence.Claims)))
+		return nil
+	}
 }
 
 func retrieveContextStep(ragTool *tools.RAGTool) func(ctx context.Context, state *State) error {
@@ -49,11 +83,26 @@ func retrieveContextStep(ragTool *tools.RAGTool) func(ctx context.Context, state
 		})
 		if err != nil {
 			state.AddTrace("retrieve_context", "RAG 工具失败，使用空上下文兜底")
-			state.RAGContexts = []string{}
 			return nil
 		}
-		state.RAGContexts = contexts
+		state.RAGContexts = appendUniqueStrings(state.RAGContexts, contexts...)
 		state.AddTrace("retrieve_context", "检索到攻略片段："+itoa(len(contexts)))
+		return nil
+	}
+}
+
+func loadWeatherStep(weatherService *services.WeatherService) func(ctx context.Context, state *State) error {
+	return func(ctx context.Context, state *State) error {
+		if weatherService == nil || state.Request.Destination == "" {
+			return nil
+		}
+		forecast := weatherService.Forecast(ctx, state.Request.Destination)
+		state.WeatherForecast = &forecast
+		contextText := formatWeatherContext(forecast)
+		if contextText != "" {
+			state.RAGContexts = appendUniqueStrings(state.RAGContexts, contextText)
+		}
+		state.AddTrace("load_weather", "已加载目的地天气："+state.Request.Destination)
 		return nil
 	}
 }
@@ -76,7 +125,7 @@ func generateDraftStep(plannerTool *tools.PlannerTool) func(ctx context.Context,
 
 func assembleItineraryStep(assembler *services.ItineraryAssembler) func(ctx context.Context, state *State) error {
 	return func(ctx context.Context, state *State) error {
-		itinerary := assembler.Assemble(state.Request, state.PlannerDraft, state.RAGContexts, state.DayCount)
+		itinerary := assembler.AssembleWithEvidence(state.Request, state.PlannerDraft, state.RAGContexts, state.DayCount, state.EvidenceReport)
 		state.DraftItinerary = itinerary
 		state.FinalItinerary = itinerary
 		return nil
@@ -93,6 +142,20 @@ func enrichMapStep(mapTool *tools.MapTool) func(ctx context.Context, state *Stat
 			return nil
 		}
 		state.AddTrace("enrich_map", "已尝试补充高德 POI 坐标")
+		return nil
+	}
+}
+
+func enrichRoutesStep(routeTool *tools.RouteTool) func(ctx context.Context, state *State) error {
+	return func(ctx context.Context, state *State) error {
+		if routeTool == nil {
+			return nil
+		}
+		if err := routeTool.Enrich(ctx, &state.FinalItinerary, state.WeatherForecast); err != nil {
+			state.AddTrace("enrich_routes", "路线规划失败，保留原交通信息")
+			return nil
+		}
+		state.AddTrace("enrich_routes", "已尝试补充高德真实路线距离和耗时")
 		return nil
 	}
 }
@@ -126,6 +189,10 @@ func repairItineraryStep(ctx context.Context, state *State) error {
 			relaxEarlyStarts(&state.FinalItinerary, issue.DayIndex)
 		case validators.CodePaceTooPacked:
 			addPaceRepairNote(&state.FinalItinerary, issue.DayIndex)
+		case validators.CodePlaceholderContent:
+			if services.SanitizeItineraryContent(state.Request, state.RAGContexts, &state.FinalItinerary) {
+				state.AddTrace("repair_itinerary", "已替换占位景点或餐饮名称")
+			}
 		}
 	}
 	state.FinalItinerary.SourceNotes = append(state.FinalItinerary.SourceNotes, "Agent 已根据校验结果进行规则级修正。")
@@ -133,11 +200,44 @@ func repairItineraryStep(ctx context.Context, state *State) error {
 }
 
 func finalizeStep(ctx context.Context, state *State) error {
+	if services.SanitizeItineraryContent(state.Request, state.RAGContexts, &state.FinalItinerary) {
+		state.AddTrace("finalize", "最终输出前已替换占位景点或餐饮名称")
+	}
 	state.FinalItinerary.SourceNotes = append(
 		state.FinalItinerary.SourceNotes,
 		"Agent trace steps: "+itoa(len(state.Trace)),
 	)
+	if state.EvidenceReport != nil && state.FinalItinerary.Evidence == nil {
+		state.FinalItinerary.Evidence = state.EvidenceReport
+	}
 	return nil
+}
+
+func buildOnlineResearchQuery(request domain.TripRequest) string {
+	parts := []string{
+		request.Destination,
+		"旅游攻略",
+		"官网",
+		"官方",
+		"地图",
+		"门票",
+		"开放时间",
+		"预约",
+		"景点",
+		"美食",
+		"交通",
+		"避坑",
+	}
+	if len(request.Preferences) > 0 {
+		parts = append(parts, request.Preferences...)
+	}
+	if request.Pace != "" {
+		parts = append(parts, request.Pace)
+	}
+	if request.SpecialNotes != "" {
+		parts = append(parts, request.SpecialNotes)
+	}
+	return strings.Join(parts, " ")
 }
 
 func relaxEarlyStarts(itinerary *domain.Itinerary, dayIndex int) {

@@ -8,7 +8,7 @@
 - `result-overview.png`：结果页总览
 - `result-map.png`：地图与天气模块
 - `history.png`：历史列表页
-- `pdf-export.png`：PDF 导出效果
+- `markdown-export.png`：Markdown 导出效果
 
 如果后面要在根目录 `README.md` 中展示图片，建议统一从这个目录读取，例如：
 

@@ -19,6 +19,7 @@ interface TripMapPoint {
 
 const props = defineProps<{
   points: TripMapPoint[];
+  polylines?: string[];
 }>();
 
 declare global {
@@ -30,7 +31,7 @@ declare global {
 const mapContainer = ref<HTMLDivElement | null>(null);
 const mapInstance = ref<any>(null);
 const markerList = ref<any[]>([]);
-const routeLine = ref<any>(null);
+const routeLines = ref<any[]>([]);
 const loadError = ref("");
 
 const amapKey = import.meta.env.VITE_AMAP_JS_KEY;
@@ -40,6 +41,76 @@ const validPoints = computed(() =>
     (point) => point.longitude != null && point.latitude != null
   )
 );
+
+const routePolylinePaths = computed(() =>
+  (props.polylines ?? [])
+    .map((polyline) => parseAmapPolyline(polyline))
+    .filter((path) => path.length >= 2)
+);
+
+function parseAmapPolyline(polyline: string): [number, number][] {
+  return polyline
+    .split(/[;|]/)
+    .map((pair) => pair.trim())
+    .filter(Boolean)
+    .map((pair) => {
+      const [lngText, latText] = pair.split(",");
+      const lng = Number(lngText);
+      const lat = Number(latText);
+      if (!Number.isFinite(lng) || !Number.isFinite(lat)) {
+        return null;
+      }
+      return [lng, lat] as [number, number];
+    })
+    .filter((point): point is [number, number] => point !== null);
+}
+
+function escapeHtml(value?: string | null): string {
+  return String(value ?? "").replace(/[&<>"']/g, (char) => {
+    const map: Record<string, string> = {
+      "&": "&amp;",
+      "<": "&lt;",
+      ">": "&gt;",
+      '"': "&quot;",
+      "'": "&#39;",
+    };
+    return map[char] || char;
+  });
+}
+
+function fallbackImageHtml() {
+  return `
+    <div style="
+      position:absolute;
+      inset:0;
+      display:grid;
+      place-items:center;
+      background:#ebe4d5;
+      color:#53616c;
+      font-size:12px;
+      font-weight:800;
+    ">暂无图片</div>
+  `;
+}
+
+function bubbleImageHtml(point: TripMapPoint) {
+  const fallback = fallbackImageHtml();
+  if (!point.imageUrl) {
+    return `<div style="position:relative;width:100%;height:100%;overflow:hidden;">${fallback}</div>`;
+  }
+
+  return `
+    <div style="position:relative;width:100%;height:100%;overflow:hidden;">
+      ${fallback}
+      <img
+        src="${escapeHtml(point.imageUrl)}"
+        alt="${escapeHtml(point.name)}"
+        style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;"
+        onerror="this.style.display='none'"
+      />
+    </div>
+  `;
+}
 
 function clearOverlays() {
   if (!mapInstance.value) {
@@ -51,10 +122,10 @@ function clearOverlays() {
   });
   markerList.value = [];
 
-  if (routeLine.value) {
-    mapInstance.value.remove(routeLine.value);
-    routeLine.value = null;
-  }
+  routeLines.value.forEach((line) => {
+    mapInstance.value.remove(line);
+  });
+  routeLines.value = [];
 }
 
 function renderMarkers() {
@@ -101,9 +172,10 @@ function renderMarkers() {
       `,
     });
 
-    const imageHtml = point.imageUrl
-      ? `<img src="${point.imageUrl}" alt="${point.name}" style="width:100%;height:100%;object-fit:cover;" />`
-      : `<div style="display:grid;place-items:center;width:100%;height:100%;background:#ebe4d5;color:#53616c;font-size:12px;font-weight:800;">暂无图片</div>`;
+    const imageHtml = bubbleImageHtml(point);
+    const safeName = escapeHtml(point.name);
+    const safeAddress = escapeHtml(point.address);
+    const safeTheme = escapeHtml(point.theme);
 
     const bubble = new window.AMap.Marker({
       position,
@@ -124,7 +196,7 @@ function renderMarkers() {
               <span style="color:#c05621;font-size:11px;font-weight:900;">D${point.dayIndex}</span>
               <span style="color:#71808c;font-size:11px;">${point.kind === "meal" ? "餐饮" : "景点"}</span>
             </div>
-            <div style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:#1f2933;font-size:12px;font-weight:900;">${point.name}</div>
+            <div style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:#1f2933;font-size:12px;font-weight:900;">${safeName}</div>
           </div>
         </div>
       `,
@@ -135,9 +207,9 @@ function renderMarkers() {
       offset: new window.AMap.Pixel(0, -38),
       content: `
         <div style="max-width:260px;padding:6px 3px;line-height:1.7;color:#24313b;font-family:'Microsoft YaHei','PingFang SC','Segoe UI',sans-serif;">
-          <strong style="color:#1f2933;">${point.name}</strong><br/>
-          <span>第 ${point.dayIndex} 天 · ${point.theme}</span><br/>
-          <span>${point.address}</span>
+          <strong style="color:#1f2933;">${safeName}</strong><br/>
+          <span>第 ${point.dayIndex} 天 · ${safeTheme}</span><br/>
+          <span>${safeAddress}</span>
         </div>
       `,
     });
@@ -152,29 +224,34 @@ function renderMarkers() {
     markerList.value.push(bubble);
   });
 
-  if (routePath.length >= 2) {
-    routeLine.value = new window.AMap.Polyline({
-      path: routePath,
-      strokeColor: "#0f766e",
-      strokeWeight: 4,
-      strokeOpacity: 0.86,
-      strokeStyle: "solid",
-      lineJoin: "round",
-      lineCap: "round",
-      showDir: true,
-      dirColor: "#c05621",
-      dirSize: 9,
-      borderWeight: 2,
-      borderColor: "rgba(255,253,247,0.92)",
-      zIndex: 50,
+  const actualRoutePaths = routePolylinePaths.value;
+  const pathsToDraw = actualRoutePaths.length ? actualRoutePaths : [routePath];
+  pathsToDraw
+    .filter((path) => path.length >= 2)
+    .forEach((path, index) => {
+      const line = new window.AMap.Polyline({
+        path,
+        strokeColor: actualRoutePaths.length ? "#2563eb" : "#0f766e",
+        strokeWeight: 4,
+        strokeOpacity: 0.86,
+        strokeStyle: "solid",
+        lineJoin: "round",
+        lineCap: "round",
+        showDir: true,
+        dirColor: "#c05621",
+        dirSize: 9,
+        borderWeight: 2,
+        borderColor: "rgba(255,253,247,0.92)",
+        zIndex: 50 - index,
+      });
+      mapInstance.value.add(line);
+      routeLines.value.push(line);
     });
-    mapInstance.value.add(routeLine.value);
-  }
 
   if (bounds.length === 1) {
     mapInstance.value.setZoomAndCenter(13, bounds[0]);
   } else if (bounds.length > 1) {
-    mapInstance.value.setFitView(markerList.value, false, [70, 70, 70, 70]);
+    mapInstance.value.setFitView([...markerList.value, ...routeLines.value], false, [70, 70, 70, 70]);
   }
 }
 
@@ -245,7 +322,7 @@ onMounted(() => {
   void initMap();
 });
 
-watch(validPoints, () => {
+watch([validPoints, routePolylinePaths], () => {
   if (mapInstance.value) {
     renderMarkers();
   }

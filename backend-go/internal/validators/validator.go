@@ -1,11 +1,12 @@
 package validators
 
-import "zhilv-yuntu-go/internal/domain"
+import "travel-agent-go/internal/domain"
 
 const (
 	CodeBudgetExceeded     = "budget_exceeded"
 	CodeEarlyStartConflict = "early_start_conflict"
 	CodePaceTooPacked      = "pace_too_packed"
+	CodePlaceholderContent = "placeholder_content"
 )
 
 // Issue 是校验器发现的问题。
@@ -36,6 +37,8 @@ func NewDefaultSet() *Set {
 		BudgetValidator{},
 		PaceValidator{},
 		PreferenceValidator{},
+		RouteValidator{},
+		ContentValidator{},
 	)
 }
 

@@ -6,9 +6,9 @@ import (
 	"strings"
 	"time"
 
-	"zhilv-yuntu-go/internal/application"
-	"zhilv-yuntu-go/internal/domain"
-	"zhilv-yuntu-go/internal/logging"
+	"travel-agent-go/internal/application"
+	"travel-agent-go/internal/domain"
+	"travel-agent-go/internal/logging"
 )
 
 // Router 是 HTTP 传输层。

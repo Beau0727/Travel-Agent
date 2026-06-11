@@ -3,8 +3,8 @@ package agent
 import (
 	"time"
 
-	"zhilv-yuntu-go/internal/domain"
-	"zhilv-yuntu-go/internal/services"
+	"travel-agent-go/internal/domain"
+	"travel-agent-go/internal/services"
 )
 
 // State 是 Agent 的“工作记忆”。
@@ -14,9 +14,11 @@ type State struct {
 	Request          domain.TripRequest
 	DayCount         int
 	RAGContexts      []string
+	EvidenceReport   *domain.EvidenceReport
 	PlannerDraft     services.PlannerDraft
 	DraftItinerary   domain.Itinerary
 	FinalItinerary   domain.Itinerary
+	WeatherForecast  *domain.WeatherForecastResponse
 	ValidationIssues []ValidationIssue
 	ToolObservations []ToolObservation
 	Trace            []TraceEvent

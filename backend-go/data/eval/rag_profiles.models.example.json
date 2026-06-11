@@ -1,0 +1,62 @@
+{
+  "profiles": [
+    {
+      "name": "baseline_simple_markdown",
+      "description": "基线：旧版/简单 RAG，只使用本地 Markdown 词法检索",
+      "backend": "markdown",
+      "disable_reranker": true
+    },
+    {
+      "name": "hybrid_bge_m3_rrf",
+      "description": "高级 RAG：bge-m3 dense 索引 + Markdown 词法召回 + RRF",
+      "backend": "hybrid",
+      "qdrant_collection": "travel_guides_bge_m3",
+      "embedding_model": "bge-m3",
+      "embedding_dim": 1024,
+      "candidate_k": 40,
+      "rrf_k": 60,
+      "query_variants": 3,
+      "disable_reranker": true
+    },
+    {
+      "name": "hybrid_bge_large_zh_rrf",
+      "description": "高级 RAG：bge-large-zh dense 索引 + Markdown 词法召回 + RRF",
+      "backend": "hybrid",
+      "qdrant_collection": "travel_guides_bge_large_zh",
+      "embedding_model": "bge-large-zh",
+      "embedding_dim": 1024,
+      "candidate_k": 40,
+      "rrf_k": 60,
+      "query_variants": 3,
+      "disable_reranker": true
+    },
+    {
+      "name": "hybrid_bge_m3_bge_reranker",
+      "description": "高级 RAG：bge-m3 召回 + bge reranker 重排",
+      "backend": "hybrid",
+      "qdrant_collection": "travel_guides_bge_m3",
+      "embedding_model": "bge-m3",
+      "embedding_dim": 1024,
+      "candidate_k": 40,
+      "rrf_k": 60,
+      "query_variants": 3,
+      "reranker_url": "http://127.0.0.1:9001/rerank",
+      "reranker_model": "bge-reranker-v2-m3",
+      "reranker_timeout_seconds": 30
+    },
+    {
+      "name": "hybrid_bge_m3_qwen_reranker",
+      "description": "高级 RAG：bge-m3 召回 + Qwen reranker 重排",
+      "backend": "hybrid",
+      "qdrant_collection": "travel_guides_bge_m3",
+      "embedding_model": "bge-m3",
+      "embedding_dim": 1024,
+      "candidate_k": 40,
+      "rrf_k": 60,
+      "query_variants": 3,
+      "reranker_url": "http://127.0.0.1:9002/rerank",
+      "reranker_model": "qwen-reranker",
+      "reranker_timeout_seconds": 30
+    }
+  ]
+}

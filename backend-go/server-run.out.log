@@ -1,0 +1,518 @@
+time=2026-06-10T16:21:37.303+08:00 level=INFO msg="rag retriever configured" backend=qdrant data_dir=data/guides qdrant_collection=travel_guides embedding_provider=ollama embedding_model=bge-m3 lexical_tokenizer=unicode_han_bigram_trigram_ascii candidate_k=40 rrf_k=60 query_variants=3 max_context_chars=6000 reranker_enabled=true reranker_model=bge-reranker-v2-m3
+time=2026-06-10T16:21:37.346+08:00 level=INFO msg="travel agent backend starting" addr=:8001
+time=2026-06-10T16:22:55.338+08:00 level=INFO msg="http request started" request_id=req_1781079775338122100_000001 method=GET path=/health query="" remote_addr=127.0.0.1:59095
+time=2026-06-10T16:22:55.339+08:00 level=INFO msg="http request completed" request_id=req_1781079775338122100_000001 method=GET path=/health status=200 bytes=16 duration_ms=1
+time=2026-06-10T16:57:28.283+08:00 level=INFO msg="http request started" request_id=req_1781081848283623700_000002 method=GET path=/health query="" remote_addr=127.0.0.1:57701
+time=2026-06-10T16:57:28.284+08:00 level=INFO msg="http request completed" request_id=req_1781081848283623700_000002 method=GET path=/health status=200 bytes=16 duration_ms=1
+time=2026-06-10T17:10:43.442+08:00 level=INFO msg="http request started" request_id=req_1781082643442942300_000003 method=OPTIONS path=/trip/generate query="" remote_addr=127.0.0.1:58138
+time=2026-06-10T17:10:43.444+08:00 level=INFO msg="http request completed" request_id=req_1781082643442942300_000003 method=OPTIONS path=/trip/generate status=204 bytes=0 duration_ms=1
+time=2026-06-10T17:10:43.446+08:00 level=INFO msg="http request started" request_id=req_1781082643446631100_000004 method=POST path=/trip/generate query="" remote_addr=127.0.0.1:58138
+time=2026-06-10T17:10:43.449+08:00 level=INFO msg="trip generation request decoded" request_id=req_1781082643446631100_000004 destination=昆明 start_date=2026-06-10 end_date=2026-06-12 travelers=2 preferences=4
+time=2026-06-10T17:10:43.450+08:00 level=INFO msg="trip usecase generate started" request_id=req_1781082643446631100_000004 destination=昆明 start_date=2026-06-10 end_date=2026-06-12
+time=2026-06-10T17:10:43.452+08:00 level=INFO msg="tool-calling agent generation started" request_id=req_1781082643446631100_000004 destination=昆明 start_date=2026-06-10 end_date=2026-06-12 model=qwen3.6-flash
+time=2026-06-10T17:10:43.453+08:00 level=INFO msg="tool-calling turn started" request_id=req_1781082643446631100_000004 turn=1 messages=2
+time=2026-06-10T17:10:43.457+08:00 level=INFO msg="llm chat request started" request_id=req_1781082643446631100_000004 model=qwen3.6-flash messages=2 tools=9 url=https://dashscope.aliyuncs.com/compatible-mode/v1/chat/completions
+time=2026-06-10T17:10:46.244+08:00 level=INFO msg="llm chat request completed" request_id=req_1781082643446631100_000004 model=qwen3.6-flash status=200 choices=1 duration_ms=2788
+time=2026-06-10T17:10:46.245+08:00 level=INFO msg="tool-calling chat request completed" request_id=req_1781082643446631100_000004 model=qwen3.6-flash duration_ms=2789
+time=2026-06-10T17:10:46.245+08:00 level=INFO msg="tool-calling model selected tools" request_id=req_1781082643446631100_000004 turn=1 tool_calls=1
+time=2026-06-10T17:10:46.246+08:00 level=INFO msg="tool call started" request_id=req_1781082643446631100_000004 tool=web_research tool_call_id=call_4a5d83405f1e42eb837da1f8
+time=2026-06-10T17:10:46.247+08:00 level=INFO msg="web research tool requested" request_id=req_1781082643446631100_000004 destination=昆明 query="昆明 三日游 旅游攻略 自然风景 美食 少数民族 徒步" top_k=5
+time=2026-06-10T17:10:46.248+08:00 level=INFO msg="web research disabled" request_id=req_1781082643446631100_000004 destination=昆明 query="昆明 三日游 旅游攻略 自然风景 美食 少数民族 徒步"
+time=2026-06-10T17:10:46.249+08:00 level=INFO msg="web research tool completed" request_id=req_1781082643446631100_000004 query="昆明 三日游 旅游攻略 自然风景 美食 少数民族 徒步" sources=0 claims=0 contexts=0
+time=2026-06-10T17:10:46.249+08:00 level=INFO msg="tool call completed" request_id=req_1781082643446631100_000004 tool=web_research tool_call_id=call_4a5d83405f1e42eb837da1f8 done=false duration_ms=3
+time=2026-06-10T17:10:46.251+08:00 level=INFO msg="tool-calling turn completed" request_id=req_1781082643446631100_000004 turn=1 duration_ms=2798
+time=2026-06-10T17:10:46.252+08:00 level=INFO msg="tool-calling turn started" request_id=req_1781082643446631100_000004 turn=2 messages=4
+time=2026-06-10T17:10:46.253+08:00 level=INFO msg="llm chat request started" request_id=req_1781082643446631100_000004 model=qwen3.6-flash messages=4 tools=9 url=https://dashscope.aliyuncs.com/compatible-mode/v1/chat/completions
+time=2026-06-10T17:10:47.542+08:00 level=INFO msg="llm chat request completed" request_id=req_1781082643446631100_000004 model=qwen3.6-flash status=200 choices=1 duration_ms=1289
+time=2026-06-10T17:10:47.542+08:00 level=INFO msg="tool-calling chat request completed" request_id=req_1781082643446631100_000004 model=qwen3.6-flash duration_ms=1289
+time=2026-06-10T17:10:47.543+08:00 level=INFO msg="tool-calling model selected tools" request_id=req_1781082643446631100_000004 turn=2 tool_calls=2
+time=2026-06-10T17:10:47.543+08:00 level=INFO msg="tool call started" request_id=req_1781082643446631100_000004 tool=web_research tool_call_id=call_fb7bc67e1e144dcfbc35b054
+time=2026-06-10T17:10:47.544+08:00 level=INFO msg="web research tool requested" request_id=req_1781082643446631100_000004 destination=昆明 query="昆明 旅游 景点 美食 推荐 2024" top_k=5
+time=2026-06-10T17:10:47.544+08:00 level=INFO msg="web research disabled" request_id=req_1781082643446631100_000004 destination=昆明 query="昆明 旅游 景点 美食 推荐 2024"
+time=2026-06-10T17:10:47.545+08:00 level=INFO msg="web research tool completed" request_id=req_1781082643446631100_000004 query="昆明 旅游 景点 美食 推荐 2024" sources=0 claims=0 contexts=0
+time=2026-06-10T17:10:47.545+08:00 level=INFO msg="tool call completed" request_id=req_1781082643446631100_000004 tool=web_research tool_call_id=call_fb7bc67e1e144dcfbc35b054 done=false duration_ms=2
+time=2026-06-10T17:10:47.546+08:00 level=INFO msg="tool call started" request_id=req_1781082643446631100_000004 tool=rag_search tool_call_id=call_510f6dabca9b4aa6ab2bf83f
+time=2026-06-10T17:10:47.546+08:00 level=INFO msg="rag search tool requested" request_id=req_1781082643446631100_000004 destination=昆明 preferences=4 pace=轻松 top_k=8
+time=2026-06-10T17:10:47.547+08:00 level=INFO msg="rag tool search started" request_id=req_1781082643446631100_000004 destination=昆明 preferences=4 pace=轻松 top_k=8
+time=2026-06-10T17:10:47.547+08:00 level=INFO msg="qdrant retriever retrieve started" destination=昆明 collection=travel_guides channel=dense variants=3 top_k=8
+time=2026-06-10T17:10:47.548+08:00 level=INFO msg="embedding request started" provider=ollama model=bge-m3 input_chars=84
+time=2026-06-10T17:11:18.024+08:00 level=INFO msg="embedding request completed" provider=ollama model=bge-m3 dim=1024 duration_ms=30476
+time=2026-06-10T17:11:18.025+08:00 level=INFO msg="qdrant search started" collection=travel_guides vector_dim=1024 limit=8
+time=2026-06-10T17:11:18.503+08:00 level=WARN msg="qdrant search failed" collection=travel_guides vector_dim=1024 limit=8 duration_ms=477 error="Post \"http://127.0.0.1:6334/collections/travel_guides/points/query\": net/http: HTTP/1.x transport connection broken: malformed HTTP response \"\\x00\\x00\\x12\\x04\\x00\\x00\\x00\\x00\\x00\\x00\\x04\\x00\\x10\\x00\\x00\\x00\\x05\\x00\\x00@\\x00\\x00\\x06\\x00\\x00@\\x00\""
+time=2026-06-10T17:11:18.503+08:00 level=WARN msg="qdrant retriever search failed" destination=昆明 collection=travel_guides channel=dense variant=1 duration_ms=30955 error="Post \"http://127.0.0.1:6334/collections/travel_guides/points/query\": net/http: HTTP/1.x transport connection broken: malformed HTTP response \"\\x00\\x00\\x12\\x04\\x00\\x00\\x00\\x00\\x00\\x00\\x04\\x00\\x10\\x00\\x00\\x00\\x05\\x00\\x00@\\x00\\x00\\x06\\x00\\x00@\\x00\""
+time=2026-06-10T17:11:18.505+08:00 level=WARN msg="rag tool search failed" request_id=req_1781082643446631100_000004 destination=昆明 duration_ms=30958 error="Post \"http://127.0.0.1:6334/collections/travel_guides/points/query\": net/http: HTTP/1.x transport connection broken: malformed HTTP response \"\\x00\\x00\\x12\\x04\\x00\\x00\\x00\\x00\\x00\\x00\\x04\\x00\\x10\\x00\\x00\\x00\\x05\\x00\\x00@\\x00\\x00\\x06\\x00\\x00@\\x00\""
+time=2026-06-10T17:11:18.506+08:00 level=WARN msg="rag search tool failed" request_id=req_1781082643446631100_000004 destination=昆明 error="Post \"http://127.0.0.1:6334/collections/travel_guides/points/query\": net/http: HTTP/1.x transport connection broken: malformed HTTP response \"\\x00\\x00\\x12\\x04\\x00\\x00\\x00\\x00\\x00\\x00\\x04\\x00\\x10\\x00\\x00\\x00\\x05\\x00\\x00@\\x00\\x00\\x06\\x00\\x00@\\x00\""
+time=2026-06-10T17:11:18.506+08:00 level=WARN msg="tool call failed" request_id=req_1781082643446631100_000004 tool=rag_search tool_call_id=call_510f6dabca9b4aa6ab2bf83f done=false duration_ms=30960 error="Post \"http://127.0.0.1:6334/collections/travel_guides/points/query\": net/http: HTTP/1.x transport connection broken: malformed HTTP response \"\\x00\\x00\\x12\\x04\\x00\\x00\\x00\\x00\\x00\\x00\\x04\\x00\\x10\\x00\\x00\\x00\\x05\\x00\\x00@\\x00\\x00\\x06\\x00\\x00@\\x00\""
+time=2026-06-10T17:11:18.507+08:00 level=INFO msg="tool-calling turn completed" request_id=req_1781082643446631100_000004 turn=2 duration_ms=32254
+time=2026-06-10T17:11:18.507+08:00 level=INFO msg="tool-calling turn started" request_id=req_1781082643446631100_000004 turn=3 messages=7
+time=2026-06-10T17:11:18.508+08:00 level=INFO msg="llm chat request started" request_id=req_1781082643446631100_000004 model=qwen3.6-flash messages=7 tools=9 url=https://dashscope.aliyuncs.com/compatible-mode/v1/chat/completions
+time=2026-06-10T17:11:19.523+08:00 level=INFO msg="llm chat request completed" request_id=req_1781082643446631100_000004 model=qwen3.6-flash status=200 choices=1 duration_ms=1015
+time=2026-06-10T17:11:19.525+08:00 level=INFO msg="tool-calling chat request completed" request_id=req_1781082643446631100_000004 model=qwen3.6-flash duration_ms=1017
+time=2026-06-10T17:11:19.525+08:00 level=INFO msg="tool-calling model selected tools" request_id=req_1781082643446631100_000004 turn=3 tool_calls=1
+time=2026-06-10T17:11:19.526+08:00 level=INFO msg="tool call started" request_id=req_1781082643446631100_000004 tool=weather_forecast tool_call_id=call_daba416d8db74b8c9bd5cfae
+time=2026-06-10T17:11:19.526+08:00 level=INFO msg="weather forecast tool requested" request_id=req_1781082643446631100_000004 city=昆明
+time=2026-06-10T17:11:19.871+08:00 level=INFO msg="weather service forecast ready" request_id=req_1781082643446631100_000004 city=昆明市 source=amap days=4
+time=2026-06-10T17:11:19.872+08:00 level=INFO msg="weather forecast tool completed" request_id=req_1781082643446631100_000004 city=昆明 days=4 context_added=true
+time=2026-06-10T17:11:19.874+08:00 level=INFO msg="tool call completed" request_id=req_1781082643446631100_000004 tool=weather_forecast tool_call_id=call_daba416d8db74b8c9bd5cfae done=false duration_ms=347
+time=2026-06-10T17:11:19.874+08:00 level=INFO msg="tool-calling turn completed" request_id=req_1781082643446631100_000004 turn=3 duration_ms=1366
+time=2026-06-10T17:11:19.875+08:00 level=INFO msg="tool-calling turn started" request_id=req_1781082643446631100_000004 turn=4 messages=9
+time=2026-06-10T17:11:19.875+08:00 level=INFO msg="llm chat request started" request_id=req_1781082643446631100_000004 model=qwen3.6-flash messages=9 tools=9 url=https://dashscope.aliyuncs.com/compatible-mode/v1/chat/completions
+time=2026-06-10T17:11:21.060+08:00 level=INFO msg="llm chat request completed" request_id=req_1781082643446631100_000004 model=qwen3.6-flash status=200 choices=1 duration_ms=1184
+time=2026-06-10T17:11:21.166+08:00 level=INFO msg="tool-calling chat request completed" request_id=req_1781082643446631100_000004 model=qwen3.6-flash duration_ms=1291
+time=2026-06-10T17:11:21.207+08:00 level=INFO msg="tool-calling model selected tools" request_id=req_1781082643446631100_000004 turn=4 tool_calls=1
+time=2026-06-10T17:11:21.209+08:00 level=INFO msg="tool call started" request_id=req_1781082643446631100_000004 tool=generate_itinerary_draft tool_call_id=call_4022e12aaa664878876fafed
+time=2026-06-10T17:11:21.210+08:00 level=INFO msg="planner draft tool requested" request_id=req_1781082643446631100_000004 destination=昆明 day_count=3 contexts=1
+time=2026-06-10T17:11:21.246+08:00 level=INFO msg="planner tool generate started" request_id=req_1781082643446631100_000004 destination=昆明 day_count=3 contexts=1
+time=2026-06-10T17:11:21.289+08:00 level=INFO msg="llm planner generate draft started" destination=昆明 day_count=3 contexts=1 model=qwen3.6-flash
+time=2026-06-10T17:11:21.291+08:00 level=INFO msg="llm planner chat request started" model=qwen3.6-flash prompt_chars=455
+time=2026-06-10T17:11:21.291+08:00 level=INFO msg="llm chat request started" model=qwen3.6-flash messages=2 tools=0 url=https://dashscope.aliyuncs.com/compatible-mode/v1/chat/completions
+time=2026-06-10T17:11:51.963+08:00 level=INFO msg="llm chat request completed" model=qwen3.6-flash status=200 choices=1 duration_ms=30672
+time=2026-06-10T17:11:51.964+08:00 level=INFO msg="llm planner chat request completed" model=qwen3.6-flash duration_ms=30673
+time=2026-06-10T17:11:51.965+08:00 level=INFO msg="llm planner generate draft completed" destination=昆明 days=3 tips=5 duration_ms=30675
+time=2026-06-10T17:11:51.965+08:00 level=INFO msg="planner tool generate completed" request_id=req_1781082643446631100_000004 destination=昆明 planner=primary days=3 duration_ms=30719
+time=2026-06-10T17:11:51.966+08:00 level=INFO msg="planner draft tool completed" request_id=req_1781082643446631100_000004 trip_id=trip_昆明_2026-06-10 days=3 estimated_budget=2969
+time=2026-06-10T17:11:51.966+08:00 level=INFO msg="tool call completed" request_id=req_1781082643446631100_000004 tool=generate_itinerary_draft tool_call_id=call_4022e12aaa664878876fafed done=false duration_ms=30756
+time=2026-06-10T17:11:51.967+08:00 level=INFO msg="tool-calling turn completed" request_id=req_1781082643446631100_000004 turn=4 duration_ms=32091
+time=2026-06-10T17:11:51.967+08:00 level=INFO msg="tool-calling turn started" request_id=req_1781082643446631100_000004 turn=5 messages=11
+time=2026-06-10T17:11:51.968+08:00 level=INFO msg="llm chat request started" request_id=req_1781082643446631100_000004 model=qwen3.6-flash messages=11 tools=9 url=https://dashscope.aliyuncs.com/compatible-mode/v1/chat/completions
+time=2026-06-10T17:11:52.537+08:00 level=INFO msg="llm chat request completed" request_id=req_1781082643446631100_000004 model=qwen3.6-flash status=200 choices=1 duration_ms=569
+time=2026-06-10T17:11:52.538+08:00 level=INFO msg="tool-calling chat request completed" request_id=req_1781082643446631100_000004 model=qwen3.6-flash duration_ms=569
+time=2026-06-10T17:11:52.538+08:00 level=INFO msg="tool-calling model selected tools" request_id=req_1781082643446631100_000004 turn=5 tool_calls=1
+time=2026-06-10T17:11:52.539+08:00 level=INFO msg="tool call started" request_id=req_1781082643446631100_000004 tool=enrich_map tool_call_id=call_4489bbbc92f6446a924b8440
+time=2026-06-10T17:11:52.539+08:00 level=INFO msg="map enrich tool requested" request_id=req_1781082643446631100_000004 trip_id=trip_昆明_2026-06-10 days=3
+time=2026-06-10T17:11:52.540+08:00 level=INFO msg="map tool enrichment disabled" request_id=req_1781082643446631100_000004 trip_id=trip_昆明_2026-06-10 destination=昆明
+time=2026-06-10T17:11:52.540+08:00 level=INFO msg="map enrich tool completed" request_id=req_1781082643446631100_000004 trip_id=trip_昆明_2026-06-10 days=3
+time=2026-06-10T17:11:52.541+08:00 level=INFO msg="tool call completed" request_id=req_1781082643446631100_000004 tool=enrich_map tool_call_id=call_4489bbbc92f6446a924b8440 done=false duration_ms=2
+time=2026-06-10T17:11:52.541+08:00 level=INFO msg="tool-calling turn completed" request_id=req_1781082643446631100_000004 turn=5 duration_ms=574
+time=2026-06-10T17:11:52.542+08:00 level=INFO msg="tool-calling turn started" request_id=req_1781082643446631100_000004 turn=6 messages=13
+time=2026-06-10T17:11:52.542+08:00 level=INFO msg="llm chat request started" request_id=req_1781082643446631100_000004 model=qwen3.6-flash messages=13 tools=9 url=https://dashscope.aliyuncs.com/compatible-mode/v1/chat/completions
+time=2026-06-10T17:11:54.626+08:00 level=INFO msg="llm chat request completed" request_id=req_1781082643446631100_000004 model=qwen3.6-flash status=200 choices=1 duration_ms=2083
+time=2026-06-10T17:11:54.628+08:00 level=INFO msg="tool-calling chat request completed" request_id=req_1781082643446631100_000004 model=qwen3.6-flash duration_ms=2085
+time=2026-06-10T17:11:54.628+08:00 level=INFO msg="tool-calling model selected tools" request_id=req_1781082643446631100_000004 turn=6 tool_calls=1
+time=2026-06-10T17:11:54.629+08:00 level=INFO msg="tool call started" request_id=req_1781082643446631100_000004 tool=enrich_routes tool_call_id=call_1abcdb19e8874a38ba05dadd
+time=2026-06-10T17:11:54.629+08:00 level=INFO msg="route enrich tool requested" request_id=req_1781082643446631100_000004 trip_id=trip_昆明_2026-06-10 days=3
+time=2026-06-10T17:11:54.629+08:00 level=INFO msg="route tool enrich started" request_id=req_1781082643446631100_000004 trip_id=trip_昆明_2026-06-10 destination=昆明 days=3
+time=2026-06-10T17:11:54.630+08:00 level=INFO msg="route tool enrich completed" request_id=req_1781082643446631100_000004 trip_id=trip_昆明_2026-06-10 duration_ms=0
+time=2026-06-10T17:11:54.630+08:00 level=INFO msg="route enrich tool completed" request_id=req_1781082643446631100_000004 trip_id=trip_昆明_2026-06-10 days=3 transport_legs=3
+time=2026-06-10T17:11:54.631+08:00 level=INFO msg="tool call completed" request_id=req_1781082643446631100_000004 tool=enrich_routes tool_call_id=call_1abcdb19e8874a38ba05dadd done=false duration_ms=2
+time=2026-06-10T17:11:54.631+08:00 level=INFO msg="tool-calling turn completed" request_id=req_1781082643446631100_000004 turn=6 duration_ms=2089
+time=2026-06-10T17:11:54.632+08:00 level=INFO msg="tool-calling turn started" request_id=req_1781082643446631100_000004 turn=7 messages=15
+time=2026-06-10T17:11:54.632+08:00 level=INFO msg="llm chat request started" request_id=req_1781082643446631100_000004 model=qwen3.6-flash messages=15 tools=9 url=https://dashscope.aliyuncs.com/compatible-mode/v1/chat/completions
+time=2026-06-10T17:11:56.523+08:00 level=INFO msg="llm chat request completed" request_id=req_1781082643446631100_000004 model=qwen3.6-flash status=200 choices=1 duration_ms=1890
+time=2026-06-10T17:11:56.524+08:00 level=INFO msg="tool-calling chat request completed" request_id=req_1781082643446631100_000004 model=qwen3.6-flash duration_ms=1891
+time=2026-06-10T17:11:56.524+08:00 level=INFO msg="tool-calling model selected tools" request_id=req_1781082643446631100_000004 turn=7 tool_calls=1
+time=2026-06-10T17:11:56.525+08:00 level=INFO msg="tool call started" request_id=req_1781082643446631100_000004 tool=validate_itinerary tool_call_id=call_e8008054f1f34b1e95c001f9
+time=2026-06-10T17:11:56.525+08:00 level=INFO msg="itinerary validation tool completed" request_id=req_1781082643446631100_000004 trip_id=trip_昆明_2026-06-10 issues=0
+time=2026-06-10T17:11:56.526+08:00 level=INFO msg="tool call completed" request_id=req_1781082643446631100_000004 tool=validate_itinerary tool_call_id=call_e8008054f1f34b1e95c001f9 done=false duration_ms=1
+time=2026-06-10T17:11:56.526+08:00 level=INFO msg="tool-calling turn completed" request_id=req_1781082643446631100_000004 turn=7 duration_ms=1894
+time=2026-06-10T17:11:56.527+08:00 level=INFO msg="tool-calling turn started" request_id=req_1781082643446631100_000004 turn=8 messages=17
+time=2026-06-10T17:11:56.528+08:00 level=INFO msg="llm chat request started" request_id=req_1781082643446631100_000004 model=qwen3.6-flash messages=17 tools=9 url=https://dashscope.aliyuncs.com/compatible-mode/v1/chat/completions
+time=2026-06-10T17:11:57.206+08:00 level=INFO msg="llm chat request completed" request_id=req_1781082643446631100_000004 model=qwen3.6-flash status=200 choices=1 duration_ms=677
+time=2026-06-10T17:11:57.207+08:00 level=INFO msg="tool-calling chat request completed" request_id=req_1781082643446631100_000004 model=qwen3.6-flash duration_ms=679
+time=2026-06-10T17:11:57.209+08:00 level=INFO msg="tool-calling model selected tools" request_id=req_1781082643446631100_000004 turn=8 tool_calls=1
+time=2026-06-10T17:11:57.210+08:00 level=INFO msg="tool call started" request_id=req_1781082643446631100_000004 tool=finish_itinerary tool_call_id=call_38865924a7734e20bbf9b467
+time=2026-06-10T17:11:57.211+08:00 level=INFO msg="tool call completed" request_id=req_1781082643446631100_000004 tool=finish_itinerary tool_call_id=call_38865924a7734e20bbf9b467 done=true duration_ms=0
+time=2026-06-10T17:11:57.212+08:00 level=INFO msg="tool-calling loop finished" request_id=req_1781082643446631100_000004 turn=8 duration_ms=685
+time=2026-06-10T17:11:57.213+08:00 level=INFO msg="map tool enrichment disabled" request_id=req_1781082643446631100_000004 trip_id=trip_昆明_2026-06-10 destination=昆明
+time=2026-06-10T17:11:57.213+08:00 level=INFO msg="route tool enrich started" request_id=req_1781082643446631100_000004 trip_id=trip_昆明_2026-06-10 destination=昆明 days=3
+time=2026-06-10T17:11:57.214+08:00 level=INFO msg="route tool enrich completed" request_id=req_1781082643446631100_000004 trip_id=trip_昆明_2026-06-10 duration_ms=0
+time=2026-06-10T17:11:57.214+08:00 level=INFO msg="tool-calling agent generation completed" request_id=req_1781082643446631100_000004 trip_id=trip_昆明_2026-06-10 days=3 trace_steps=19 tool_observations=9 duration_ms=73763
+time=2026-06-10T17:11:57.215+08:00 level=INFO msg="trip usecase generate completed" request_id=req_1781082643446631100_000004 trip_id=trip_昆明_2026-06-10 destination=昆明 days=3 estimated_budget=2937.95 duration_ms=73764
+time=2026-06-10T17:11:57.215+08:00 level=INFO msg="http request completed" request_id=req_1781082643446631100_000004 method=POST path=/trip/generate status=200 bytes=5745 duration_ms=73769
+time=2026-06-10T17:11:57.238+08:00 level=INFO msg="http request started" request_id=req_1781082717238247000_000005 method=GET path=/weather/forecast query="city=%E6%98%86%E6%98%8E" remote_addr=127.0.0.1:58138
+time=2026-06-10T17:11:57.240+08:00 level=INFO msg="weather usecase forecast started" request_id=req_1781082717238247000_000005 city=昆明
+time=2026-06-10T17:11:57.553+08:00 level=INFO msg="weather service forecast ready" request_id=req_1781082717238247000_000005 city=昆明市 source=amap days=4
+time=2026-06-10T17:11:57.555+08:00 level=INFO msg="weather usecase forecast completed" request_id=req_1781082717238247000_000005 city=昆明 days=4 duration_ms=314
+time=2026-06-10T17:11:57.557+08:00 level=INFO msg="http request completed" request_id=req_1781082717238247000_000005 method=GET path=/weather/forecast status=200 bytes=994 duration_ms=319
+time=2026-06-10T19:32:58.939+08:00 level=INFO msg="http request started" request_id=req_1781091178939537100_000006 method=GET path=/trip query="" remote_addr=127.0.0.1:61327
+time=2026-06-10T19:32:58.940+08:00 level=INFO msg="trip usecase list started" request_id=req_1781091178939537100_000006
+time=2026-06-10T19:32:58.987+08:00 level=INFO msg="trip repository list completed" file=data/trips.json total=1 duration_ms=46
+time=2026-06-10T19:32:58.987+08:00 level=INFO msg="trip usecase list completed" request_id=req_1781091178939537100_000006 total=1 duration_ms=47
+time=2026-06-10T19:32:58.988+08:00 level=INFO msg="http request completed" request_id=req_1781091178939537100_000006 method=GET path=/trip status=200 bytes=570 duration_ms=48
+time=2026-06-10T19:33:02.036+08:00 level=INFO msg="http request started" request_id=req_1781091182036115600_000007 method=GET path=/trip query="" remote_addr=127.0.0.1:61327
+time=2026-06-10T19:33:02.305+08:00 level=INFO msg="trip usecase list started" request_id=req_1781091182036115600_000007
+time=2026-06-10T19:33:02.305+08:00 level=INFO msg="trip repository list completed" file=data/trips.json total=1 duration_ms=0
+time=2026-06-10T19:33:02.306+08:00 level=INFO msg="trip usecase list completed" request_id=req_1781091182036115600_000007 total=1 duration_ms=1
+time=2026-06-10T19:33:02.306+08:00 level=INFO msg="http request completed" request_id=req_1781091182036115600_000007 method=GET path=/trip status=200 bytes=570 duration_ms=270
+time=2026-06-10T19:33:38.598+08:00 level=INFO msg="http request started" request_id=req_1781091218598433700_000008 method=OPTIONS path=/trip/generate query="" remote_addr=127.0.0.1:61327
+time=2026-06-10T19:33:38.609+08:00 level=INFO msg="http request completed" request_id=req_1781091218598433700_000008 method=OPTIONS path=/trip/generate status=204 bytes=0 duration_ms=11
+time=2026-06-10T19:33:38.627+08:00 level=INFO msg="http request started" request_id=req_1781091218627521300_000009 method=POST path=/trip/generate query="" remote_addr=127.0.0.1:61327
+time=2026-06-10T19:33:38.628+08:00 level=INFO msg="trip generation request decoded" request_id=req_1781091218627521300_000009 destination=大连 start_date=2026-06-10 end_date=2026-06-12 travelers=3 preferences=5
+time=2026-06-10T19:33:38.628+08:00 level=INFO msg="trip usecase generate started" request_id=req_1781091218627521300_000009 destination=大连 start_date=2026-06-10 end_date=2026-06-12
+time=2026-06-10T19:33:38.629+08:00 level=INFO msg="tool-calling agent generation started" request_id=req_1781091218627521300_000009 destination=大连 start_date=2026-06-10 end_date=2026-06-12 model=qwen3.6-flash
+time=2026-06-10T19:33:38.629+08:00 level=INFO msg="tool-calling turn started" request_id=req_1781091218627521300_000009 turn=1 messages=2
+time=2026-06-10T19:33:38.630+08:00 level=INFO msg="llm chat request started" request_id=req_1781091218627521300_000009 model=qwen3.6-flash messages=2 tools=9 url=https://dashscope.aliyuncs.com/compatible-mode/v1/chat/completions
+time=2026-06-10T19:33:41.562+08:00 level=INFO msg="llm chat request completed" request_id=req_1781091218627521300_000009 model=qwen3.6-flash status=200 choices=1 duration_ms=2931
+time=2026-06-10T19:33:41.563+08:00 level=INFO msg="tool-calling chat request completed" request_id=req_1781091218627521300_000009 model=qwen3.6-flash duration_ms=2932
+time=2026-06-10T19:33:41.563+08:00 level=INFO msg="tool-calling model selected tools" request_id=req_1781091218627521300_000009 turn=1 tool_calls=2
+time=2026-06-10T19:33:41.564+08:00 level=INFO msg="tool call started" request_id=req_1781091218627521300_000009 tool=web_research tool_call_id=call_39231c13db5a4a648b6dd3a0
+time=2026-06-10T19:33:41.565+08:00 level=INFO msg="web research tool requested" request_id=req_1781091218627521300_000009 destination=大连 query="大连旅游攻略 自然风景 拍照 美食 博物馆 三日游" top_k=5
+time=2026-06-10T19:33:41.565+08:00 level=INFO msg="web research disabled" request_id=req_1781091218627521300_000009 destination=大连 query="大连旅游攻略 自然风景 拍照 美食 博物馆 三日游"
+time=2026-06-10T19:33:41.565+08:00 level=INFO msg="web research tool completed" request_id=req_1781091218627521300_000009 query="大连旅游攻略 自然风景 拍照 美食 博物馆 三日游" sources=0 claims=0 contexts=0
+time=2026-06-10T19:33:41.566+08:00 level=INFO msg="tool call completed" request_id=req_1781091218627521300_000009 tool=web_research tool_call_id=call_39231c13db5a4a648b6dd3a0 done=false duration_ms=1
+time=2026-06-10T19:33:41.566+08:00 level=INFO msg="tool call started" request_id=req_1781091218627521300_000009 tool=weather_forecast tool_call_id=call_4d99de115b08441386ce26ba
+time=2026-06-10T19:33:41.567+08:00 level=INFO msg="weather forecast tool requested" request_id=req_1781091218627521300_000009 city=大连
+time=2026-06-10T19:33:41.824+08:00 level=INFO msg="weather service forecast ready" request_id=req_1781091218627521300_000009 city=大连市 source=amap days=4
+time=2026-06-10T19:33:41.918+08:00 level=INFO msg="weather forecast tool completed" request_id=req_1781091218627521300_000009 city=大连 days=4 context_added=true
+time=2026-06-10T19:33:41.918+08:00 level=INFO msg="tool call completed" request_id=req_1781091218627521300_000009 tool=weather_forecast tool_call_id=call_4d99de115b08441386ce26ba done=false duration_ms=351
+time=2026-06-10T19:33:41.919+08:00 level=INFO msg="tool-calling turn completed" request_id=req_1781091218627521300_000009 turn=1 duration_ms=3289
+time=2026-06-10T19:33:41.920+08:00 level=INFO msg="tool-calling turn started" request_id=req_1781091218627521300_000009 turn=2 messages=5
+time=2026-06-10T19:33:41.920+08:00 level=INFO msg="llm chat request started" request_id=req_1781091218627521300_000009 model=qwen3.6-flash messages=5 tools=9 url=https://dashscope.aliyuncs.com/compatible-mode/v1/chat/completions
+time=2026-06-10T19:33:43.740+08:00 level=INFO msg="llm chat request completed" request_id=req_1781091218627521300_000009 model=qwen3.6-flash status=200 choices=1 duration_ms=1819
+time=2026-06-10T19:33:43.741+08:00 level=INFO msg="tool-calling chat request completed" request_id=req_1781091218627521300_000009 model=qwen3.6-flash duration_ms=1820
+time=2026-06-10T19:33:43.742+08:00 level=INFO msg="tool-calling model selected tools" request_id=req_1781091218627521300_000009 turn=2 tool_calls=2
+time=2026-06-10T19:33:43.742+08:00 level=INFO msg="tool call started" request_id=req_1781091218627521300_000009 tool=rag_search tool_call_id=call_79f3a5a3ce0745ffb65bc163
+time=2026-06-10T19:33:43.743+08:00 level=INFO msg="rag search tool requested" request_id=req_1781091218627521300_000009 destination=大连 preferences=5 pace=轻松 top_k=8
+time=2026-06-10T19:33:43.743+08:00 level=INFO msg="rag tool search started" request_id=req_1781091218627521300_000009 destination=大连 preferences=5 pace=轻松 top_k=8
+time=2026-06-10T19:33:43.744+08:00 level=INFO msg="qdrant retriever retrieve started" destination=大连 collection=travel_guides channel=dense variants=3 top_k=8
+time=2026-06-10T19:33:43.744+08:00 level=INFO msg="embedding request started" provider=ollama model=bge-m3 input_chars=84
+time=2026-06-10T19:34:17.843+08:00 level=INFO msg="embedding request completed" provider=ollama model=bge-m3 dim=1024 duration_ms=34099
+time=2026-06-10T19:34:17.846+08:00 level=INFO msg="qdrant search started" collection=travel_guides vector_dim=1024 limit=8
+time=2026-06-10T19:34:18.142+08:00 level=WARN msg="qdrant search failed" collection=travel_guides vector_dim=1024 limit=8 duration_ms=296 error="Post \"http://127.0.0.1:6334/collections/travel_guides/points/query\": net/http: HTTP/1.x transport connection broken: malformed HTTP response \"\\x00\\x00\\x12\\x04\\x00\\x00\\x00\\x00\\x00\\x00\\x04\\x00\\x10\\x00\\x00\\x00\\x05\\x00\\x00@\\x00\\x00\\x06\\x00\\x00@\\x00\""
+time=2026-06-10T19:34:18.190+08:00 level=WARN msg="qdrant retriever search failed" destination=大连 collection=travel_guides channel=dense variant=1 duration_ms=34445 error="Post \"http://127.0.0.1:6334/collections/travel_guides/points/query\": net/http: HTTP/1.x transport connection broken: malformed HTTP response \"\\x00\\x00\\x12\\x04\\x00\\x00\\x00\\x00\\x00\\x00\\x04\\x00\\x10\\x00\\x00\\x00\\x05\\x00\\x00@\\x00\\x00\\x06\\x00\\x00@\\x00\""
+time=2026-06-10T19:34:18.192+08:00 level=WARN msg="rag tool search failed" request_id=req_1781091218627521300_000009 destination=大连 duration_ms=34448 error="Post \"http://127.0.0.1:6334/collections/travel_guides/points/query\": net/http: HTTP/1.x transport connection broken: malformed HTTP response \"\\x00\\x00\\x12\\x04\\x00\\x00\\x00\\x00\\x00\\x00\\x04\\x00\\x10\\x00\\x00\\x00\\x05\\x00\\x00@\\x00\\x00\\x06\\x00\\x00@\\x00\""
+time=2026-06-10T19:34:18.194+08:00 level=WARN msg="rag search tool failed" request_id=req_1781091218627521300_000009 destination=大连 error="Post \"http://127.0.0.1:6334/collections/travel_guides/points/query\": net/http: HTTP/1.x transport connection broken: malformed HTTP response \"\\x00\\x00\\x12\\x04\\x00\\x00\\x00\\x00\\x00\\x00\\x04\\x00\\x10\\x00\\x00\\x00\\x05\\x00\\x00@\\x00\\x00\\x06\\x00\\x00@\\x00\""
+time=2026-06-10T19:34:18.206+08:00 level=WARN msg="tool call failed" request_id=req_1781091218627521300_000009 tool=rag_search tool_call_id=call_79f3a5a3ce0745ffb65bc163 done=false duration_ms=34463 error="Post \"http://127.0.0.1:6334/collections/travel_guides/points/query\": net/http: HTTP/1.x transport connection broken: malformed HTTP response \"\\x00\\x00\\x12\\x04\\x00\\x00\\x00\\x00\\x00\\x00\\x04\\x00\\x10\\x00\\x00\\x00\\x05\\x00\\x00@\\x00\\x00\\x06\\x00\\x00@\\x00\""
+time=2026-06-10T19:34:18.208+08:00 level=INFO msg="tool call started" request_id=req_1781091218627521300_000009 tool=web_research tool_call_id=call_f50aa7b247924d259183b9e6
+time=2026-06-10T19:34:18.209+08:00 level=INFO msg="web research tool requested" request_id=req_1781091218627521300_000009 destination=大连 query="大连 星海广场 棒棰岛 老虎滩 俄罗斯风情街 海鲜美食 攻略" top_k=5
+time=2026-06-10T19:34:18.210+08:00 level=INFO msg="web research disabled" request_id=req_1781091218627521300_000009 destination=大连 query="大连 星海广场 棒棰岛 老虎滩 俄罗斯风情街 海鲜美食 攻略"
+time=2026-06-10T19:34:18.212+08:00 level=INFO msg="web research tool completed" request_id=req_1781091218627521300_000009 query="大连 星海广场 棒棰岛 老虎滩 俄罗斯风情街 海鲜美食 攻略" sources=0 claims=0 contexts=1
+time=2026-06-10T19:34:18.213+08:00 level=INFO msg="tool call completed" request_id=req_1781091218627521300_000009 tool=web_research tool_call_id=call_f50aa7b247924d259183b9e6 done=false duration_ms=4
+time=2026-06-10T19:34:18.228+08:00 level=INFO msg="tool-calling turn completed" request_id=req_1781091218627521300_000009 turn=2 duration_ms=36308
+time=2026-06-10T19:34:18.230+08:00 level=INFO msg="tool-calling turn started" request_id=req_1781091218627521300_000009 turn=3 messages=8
+time=2026-06-10T19:34:18.242+08:00 level=INFO msg="llm chat request started" request_id=req_1781091218627521300_000009 model=qwen3.6-flash messages=8 tools=9 url=https://dashscope.aliyuncs.com/compatible-mode/v1/chat/completions
+time=2026-06-10T19:34:19.396+08:00 level=INFO msg="llm chat request completed" request_id=req_1781091218627521300_000009 model=qwen3.6-flash status=200 choices=1 duration_ms=1155
+time=2026-06-10T19:34:19.405+08:00 level=INFO msg="tool-calling chat request completed" request_id=req_1781091218627521300_000009 model=qwen3.6-flash duration_ms=1164
+time=2026-06-10T19:34:19.407+08:00 level=INFO msg="tool-calling model selected tools" request_id=req_1781091218627521300_000009 turn=3 tool_calls=1
+time=2026-06-10T19:34:19.408+08:00 level=INFO msg="tool call started" request_id=req_1781091218627521300_000009 tool=web_research tool_call_id=call_bd0cf55e837f411bb8694773
+time=2026-06-10T19:34:19.409+08:00 level=INFO msg="web research tool requested" request_id=req_1781091218627521300_000009 destination=大连 query="大连三日游行程安排 星海广场 棒棰岛 老虎滩海洋公园 俄罗斯风情街 海鲜餐厅推荐" top_k=5
+time=2026-06-10T19:34:19.426+08:00 level=INFO msg="web research disabled" request_id=req_1781091218627521300_000009 destination=大连 query="大连三日游行程安排 星海广场 棒棰岛 老虎滩海洋公园 俄罗斯风情街 海鲜餐厅推荐"
+time=2026-06-10T19:34:19.428+08:00 level=INFO msg="web research tool completed" request_id=req_1781091218627521300_000009 query="大连三日游行程安排 星海广场 棒棰岛 老虎滩海洋公园 俄罗斯风情街 海鲜餐厅推荐" sources=0 claims=0 contexts=1
+time=2026-06-10T19:34:19.429+08:00 level=INFO msg="tool call completed" request_id=req_1781091218627521300_000009 tool=web_research tool_call_id=call_bd0cf55e837f411bb8694773 done=false duration_ms=21
+time=2026-06-10T19:34:19.431+08:00 level=INFO msg="tool-calling turn completed" request_id=req_1781091218627521300_000009 turn=3 duration_ms=1201
+time=2026-06-10T19:34:19.432+08:00 level=INFO msg="tool-calling turn started" request_id=req_1781091218627521300_000009 turn=4 messages=10
+time=2026-06-10T19:34:19.435+08:00 level=INFO msg="llm chat request started" request_id=req_1781091218627521300_000009 model=qwen3.6-flash messages=10 tools=9 url=https://dashscope.aliyuncs.com/compatible-mode/v1/chat/completions
+time=2026-06-10T19:34:20.870+08:00 level=INFO msg="llm chat request completed" request_id=req_1781091218627521300_000009 model=qwen3.6-flash status=200 choices=1 duration_ms=1435
+time=2026-06-10T19:34:21.010+08:00 level=INFO msg="tool-calling chat request completed" request_id=req_1781091218627521300_000009 model=qwen3.6-flash duration_ms=1575
+time=2026-06-10T19:34:21.091+08:00 level=INFO msg="tool-calling model selected tools" request_id=req_1781091218627521300_000009 turn=4 tool_calls=2
+time=2026-06-10T19:34:21.223+08:00 level=INFO msg="tool call started" request_id=req_1781091218627521300_000009 tool=web_research tool_call_id=call_3ae3bad3491d4fa4aef24344
+time=2026-06-10T19:34:21.224+08:00 level=INFO msg="web research tool requested" request_id=req_1781091218627521300_000009 destination=大连 query="大连旅游攻略 必去景点 星海广场 棒棰岛 老虎滩 渔人码头" top_k=5
+time=2026-06-10T19:34:21.225+08:00 level=INFO msg="web research disabled" request_id=req_1781091218627521300_000009 destination=大连 query="大连旅游攻略 必去景点 星海广场 棒棰岛 老虎滩 渔人码头"
+time=2026-06-10T19:34:21.226+08:00 level=INFO msg="web research tool completed" request_id=req_1781091218627521300_000009 query="大连旅游攻略 必去景点 星海广场 棒棰岛 老虎滩 渔人码头" sources=0 claims=0 contexts=1
+time=2026-06-10T19:34:21.241+08:00 level=INFO msg="tool call completed" request_id=req_1781091218627521300_000009 tool=web_research tool_call_id=call_3ae3bad3491d4fa4aef24344 done=false duration_ms=18
+time=2026-06-10T19:34:21.254+08:00 level=INFO msg="tool call started" request_id=req_1781091218627521300_000009 tool=web_research tool_call_id=call_bfc53373059c4bdeb65ccbb2
+time=2026-06-10T19:34:21.311+08:00 level=INFO msg="web research tool requested" request_id=req_1781091218627521300_000009 destination=大连 query="大连海鲜美食推荐 特色餐厅 大连菜" top_k=5
+time=2026-06-10T19:34:21.312+08:00 level=INFO msg="web research disabled" request_id=req_1781091218627521300_000009 destination=大连 query="大连海鲜美食推荐 特色餐厅 大连菜"
+time=2026-06-10T19:34:21.313+08:00 level=INFO msg="web research tool completed" request_id=req_1781091218627521300_000009 query="大连海鲜美食推荐 特色餐厅 大连菜" sources=0 claims=0 contexts=1
+time=2026-06-10T19:34:21.313+08:00 level=INFO msg="tool call completed" request_id=req_1781091218627521300_000009 tool=web_research tool_call_id=call_bfc53373059c4bdeb65ccbb2 done=false duration_ms=58
+time=2026-06-10T19:34:21.314+08:00 level=INFO msg="tool-calling turn completed" request_id=req_1781091218627521300_000009 turn=4 duration_ms=1881
+time=2026-06-10T19:34:21.314+08:00 level=INFO msg="tool-calling turn started" request_id=req_1781091218627521300_000009 turn=5 messages=13
+time=2026-06-10T19:34:21.315+08:00 level=INFO msg="llm chat request started" request_id=req_1781091218627521300_000009 model=qwen3.6-flash messages=13 tools=9 url=https://dashscope.aliyuncs.com/compatible-mode/v1/chat/completions
+time=2026-06-10T19:34:23.024+08:00 level=INFO msg="llm chat request completed" request_id=req_1781091218627521300_000009 model=qwen3.6-flash status=200 choices=1 duration_ms=1709
+time=2026-06-10T19:34:23.026+08:00 level=INFO msg="tool-calling chat request completed" request_id=req_1781091218627521300_000009 model=qwen3.6-flash duration_ms=1711
+time=2026-06-10T19:34:23.027+08:00 level=INFO msg="tool-calling model selected tools" request_id=req_1781091218627521300_000009 turn=5 tool_calls=2
+time=2026-06-10T19:34:23.027+08:00 level=INFO msg="tool call started" request_id=req_1781091218627521300_000009 tool=web_research tool_call_id=call_489f22b389b34df5ad46976e
+time=2026-06-10T19:34:23.028+08:00 level=INFO msg="web research tool requested" request_id=req_1781091218627521300_000009 destination=大连 query="大连旅游 景点推荐 自然风光 拍照打卡地 2024" top_k=5
+time=2026-06-10T19:34:23.028+08:00 level=INFO msg="web research disabled" request_id=req_1781091218627521300_000009 destination=大连 query="大连旅游 景点推荐 自然风光 拍照打卡地 2024"
+time=2026-06-10T19:34:23.029+08:00 level=INFO msg="web research tool completed" request_id=req_1781091218627521300_000009 query="大连旅游 景点推荐 自然风光 拍照打卡地 2024" sources=0 claims=0 contexts=1
+time=2026-06-10T19:34:23.031+08:00 level=INFO msg="tool call completed" request_id=req_1781091218627521300_000009 tool=web_research tool_call_id=call_489f22b389b34df5ad46976e done=false duration_ms=3
+time=2026-06-10T19:34:23.031+08:00 level=INFO msg="tool call started" request_id=req_1781091218627521300_000009 tool=web_research tool_call_id=call_2fb3caf8bb9047dcb4fa4adb
+time=2026-06-10T19:34:23.032+08:00 level=INFO msg="web research tool requested" request_id=req_1781091218627521300_000009 destination=大连 query="大连博物馆 旅顺博物馆 大连自然博物馆 参观攻略" top_k=5
+time=2026-06-10T19:34:23.032+08:00 level=INFO msg="web research disabled" request_id=req_1781091218627521300_000009 destination=大连 query="大连博物馆 旅顺博物馆 大连自然博物馆 参观攻略"
+time=2026-06-10T19:34:23.033+08:00 level=INFO msg="web research tool completed" request_id=req_1781091218627521300_000009 query="大连博物馆 旅顺博物馆 大连自然博物馆 参观攻略" sources=0 claims=0 contexts=1
+time=2026-06-10T19:34:23.033+08:00 level=INFO msg="tool call completed" request_id=req_1781091218627521300_000009 tool=web_research tool_call_id=call_2fb3caf8bb9047dcb4fa4adb done=false duration_ms=2
+time=2026-06-10T19:34:23.034+08:00 level=INFO msg="tool-calling turn completed" request_id=req_1781091218627521300_000009 turn=5 duration_ms=1719
+time=2026-06-10T19:34:23.034+08:00 level=INFO msg="tool-calling turn started" request_id=req_1781091218627521300_000009 turn=6 messages=16
+time=2026-06-10T19:34:23.035+08:00 level=INFO msg="llm chat request started" request_id=req_1781091218627521300_000009 model=qwen3.6-flash messages=16 tools=9 url=https://dashscope.aliyuncs.com/compatible-mode/v1/chat/completions
+time=2026-06-10T19:34:24.790+08:00 level=INFO msg="llm chat request completed" request_id=req_1781091218627521300_000009 model=qwen3.6-flash status=200 choices=1 duration_ms=1755
+time=2026-06-10T19:34:24.791+08:00 level=INFO msg="tool-calling chat request completed" request_id=req_1781091218627521300_000009 model=qwen3.6-flash duration_ms=1755
+time=2026-06-10T19:34:24.791+08:00 level=INFO msg="tool-calling model selected tools" request_id=req_1781091218627521300_000009 turn=6 tool_calls=2
+time=2026-06-10T19:34:24.792+08:00 level=INFO msg="tool call started" request_id=req_1781091218627521300_000009 tool=web_research tool_call_id=call_e0456b0355d94f6a93158f23
+time=2026-06-10T19:34:24.793+08:00 level=INFO msg="web research tool requested" request_id=req_1781091218627521300_000009 destination=大连 query="大连看海上日出地点 棒棰岛 星海广场 日出时间" top_k=5
+time=2026-06-10T19:34:24.794+08:00 level=INFO msg="web research disabled" request_id=req_1781091218627521300_000009 destination=大连 query="大连看海上日出地点 棒棰岛 星海广场 日出时间"
+time=2026-06-10T19:34:24.794+08:00 level=INFO msg="web research tool completed" request_id=req_1781091218627521300_000009 query="大连看海上日出地点 棒棰岛 星海广场 日出时间" sources=0 claims=0 contexts=1
+time=2026-06-10T19:34:24.795+08:00 level=INFO msg="tool call completed" request_id=req_1781091218627521300_000009 tool=web_research tool_call_id=call_e0456b0355d94f6a93158f23 done=false duration_ms=3
+time=2026-06-10T19:34:24.797+08:00 level=INFO msg="tool call started" request_id=req_1781091218627521300_000009 tool=web_research tool_call_id=call_47e37cb3f6a343969a5961c9
+time=2026-06-10T19:34:24.797+08:00 level=INFO msg="web research tool requested" request_id=req_1781091218627521300_000009 destination=大连 query="大连三日游路线规划 轻松节奏 景点串联" top_k=5
+time=2026-06-10T19:34:24.798+08:00 level=INFO msg="web research disabled" request_id=req_1781091218627521300_000009 destination=大连 query="大连三日游路线规划 轻松节奏 景点串联"
+time=2026-06-10T19:34:24.799+08:00 level=INFO msg="web research tool completed" request_id=req_1781091218627521300_000009 query="大连三日游路线规划 轻松节奏 景点串联" sources=0 claims=0 contexts=1
+time=2026-06-10T19:34:24.800+08:00 level=INFO msg="tool call completed" request_id=req_1781091218627521300_000009 tool=web_research tool_call_id=call_47e37cb3f6a343969a5961c9 done=false duration_ms=3
+time=2026-06-10T19:34:24.802+08:00 level=INFO msg="tool-calling turn completed" request_id=req_1781091218627521300_000009 turn=6 duration_ms=1768
+time=2026-06-10T19:34:24.803+08:00 level=INFO msg="tool-calling turn started" request_id=req_1781091218627521300_000009 turn=7 messages=19
+time=2026-06-10T19:34:24.803+08:00 level=INFO msg="llm chat request started" request_id=req_1781091218627521300_000009 model=qwen3.6-flash messages=19 tools=9 url=https://dashscope.aliyuncs.com/compatible-mode/v1/chat/completions
+time=2026-06-10T19:34:28.843+08:00 level=INFO msg="llm chat request completed" request_id=req_1781091218627521300_000009 model=qwen3.6-flash status=200 choices=1 duration_ms=4039
+time=2026-06-10T19:34:28.844+08:00 level=INFO msg="tool-calling chat request completed" request_id=req_1781091218627521300_000009 model=qwen3.6-flash duration_ms=4040
+time=2026-06-10T19:34:28.844+08:00 level=INFO msg="tool-calling model selected tools" request_id=req_1781091218627521300_000009 turn=7 tool_calls=1
+time=2026-06-10T19:34:28.845+08:00 level=INFO msg="tool call started" request_id=req_1781091218627521300_000009 tool=generate_itinerary_draft tool_call_id=call_4c5e967381a24586ae1ddd28
+time=2026-06-10T19:34:28.846+08:00 level=INFO msg="planner draft tool requested" request_id=req_1781091218627521300_000009 destination=大连 day_count=3 contexts=1
+time=2026-06-10T19:34:28.846+08:00 level=INFO msg="planner tool generate started" request_id=req_1781091218627521300_000009 destination=大连 day_count=3 contexts=1
+time=2026-06-10T19:34:28.847+08:00 level=INFO msg="llm planner generate draft started" destination=大连 day_count=3 contexts=1 model=qwen3.6-flash
+time=2026-06-10T19:34:28.848+08:00 level=INFO msg="llm planner chat request started" model=qwen3.6-flash prompt_chars=455
+time=2026-06-10T19:34:28.850+08:00 level=INFO msg="llm chat request started" model=qwen3.6-flash messages=2 tools=0 url=https://dashscope.aliyuncs.com/compatible-mode/v1/chat/completions
+time=2026-06-10T19:34:39.963+08:00 level=INFO msg="llm chat request completed" model=qwen3.6-flash status=200 choices=1 duration_ms=11112
+time=2026-06-10T19:34:40.140+08:00 level=INFO msg="llm planner chat request completed" model=qwen3.6-flash duration_ms=11291
+time=2026-06-10T19:34:40.189+08:00 level=INFO msg="llm planner generate draft completed" destination=大连 days=3 tips=5 duration_ms=11342
+time=2026-06-10T19:34:40.310+08:00 level=INFO msg="planner tool generate completed" request_id=req_1781091218627521300_000009 destination=大连 planner=primary days=3 duration_ms=11463
+time=2026-06-10T19:34:40.422+08:00 level=INFO msg="planner draft tool completed" request_id=req_1781091218627521300_000009 trip_id=trip_大连_2026-06-10 days=3 estimated_budget=4516
+time=2026-06-10T19:34:40.487+08:00 level=INFO msg="tool call completed" request_id=req_1781091218627521300_000009 tool=generate_itinerary_draft tool_call_id=call_4c5e967381a24586ae1ddd28 done=false duration_ms=11642
+time=2026-06-10T19:34:40.647+08:00 level=INFO msg="tool-calling turn completed" request_id=req_1781091218627521300_000009 turn=7 duration_ms=15844
+time=2026-06-10T19:34:40.733+08:00 level=INFO msg="tool-calling turn started" request_id=req_1781091218627521300_000009 turn=8 messages=21
+time=2026-06-10T19:34:40.926+08:00 level=INFO msg="llm chat request started" request_id=req_1781091218627521300_000009 model=qwen3.6-flash messages=21 tools=9 url=https://dashscope.aliyuncs.com/compatible-mode/v1/chat/completions
+time=2026-06-10T19:34:41.787+08:00 level=INFO msg="llm chat request completed" request_id=req_1781091218627521300_000009 model=qwen3.6-flash status=200 choices=1 duration_ms=861
+time=2026-06-10T19:34:41.788+08:00 level=INFO msg="tool-calling chat request completed" request_id=req_1781091218627521300_000009 model=qwen3.6-flash duration_ms=862
+time=2026-06-10T19:34:41.789+08:00 level=INFO msg="tool-calling model selected tools" request_id=req_1781091218627521300_000009 turn=8 tool_calls=1
+time=2026-06-10T19:34:41.789+08:00 level=INFO msg="tool call started" request_id=req_1781091218627521300_000009 tool=enrich_map tool_call_id=call_df0fa68a614140da83685f0c
+time=2026-06-10T19:34:41.790+08:00 level=INFO msg="map enrich tool requested" request_id=req_1781091218627521300_000009 trip_id=trip_大连_2026-06-10 days=3
+time=2026-06-10T19:34:41.790+08:00 level=INFO msg="map tool enrichment disabled" request_id=req_1781091218627521300_000009 trip_id=trip_大连_2026-06-10 destination=大连
+time=2026-06-10T19:34:41.793+08:00 level=INFO msg="map enrich tool completed" request_id=req_1781091218627521300_000009 trip_id=trip_大连_2026-06-10 days=3
+time=2026-06-10T19:34:41.794+08:00 level=INFO msg="tool call completed" request_id=req_1781091218627521300_000009 tool=enrich_map tool_call_id=call_df0fa68a614140da83685f0c done=false duration_ms=4
+time=2026-06-10T19:34:41.796+08:00 level=INFO msg="tool-calling turn completed" request_id=req_1781091218627521300_000009 turn=8 duration_ms=1063
+time=2026-06-10T19:34:41.797+08:00 level=INFO msg="map tool enrichment disabled" request_id=req_1781091218627521300_000009 trip_id=trip_大连_2026-06-10 destination=大连
+time=2026-06-10T19:34:41.797+08:00 level=INFO msg="route tool enrich started" request_id=req_1781091218627521300_000009 trip_id=trip_大连_2026-06-10 destination=大连 days=3
+time=2026-06-10T19:34:41.798+08:00 level=INFO msg="route tool enrich completed" request_id=req_1781091218627521300_000009 trip_id=trip_大连_2026-06-10 duration_ms=0
+time=2026-06-10T19:34:41.798+08:00 level=INFO msg="tool-calling agent generation completed" request_id=req_1781091218627521300_000009 trip_id=trip_大连_2026-06-10 days=3 trace_steps=28 tool_observations=13 duration_ms=63170
+time=2026-06-10T19:34:41.799+08:00 level=INFO msg="trip usecase generate completed" request_id=req_1781091218627521300_000009 trip_id=trip_大连_2026-06-10 destination=大连 days=3 estimated_budget=4481.92 duration_ms=63170
+time=2026-06-10T19:34:41.799+08:00 level=INFO msg="http request completed" request_id=req_1781091218627521300_000009 method=POST path=/trip/generate status=200 bytes=3708 duration_ms=63172
+time=2026-06-10T19:34:41.827+08:00 level=INFO msg="http request started" request_id=req_1781091281827685600_000010 method=GET path=/weather/forecast query="city=%E5%A4%A7%E8%BF%9E" remote_addr=127.0.0.1:61327
+time=2026-06-10T19:34:41.828+08:00 level=INFO msg="weather usecase forecast started" request_id=req_1781091281827685600_000010 city=大连
+time=2026-06-10T19:34:42.144+08:00 level=INFO msg="weather service forecast ready" request_id=req_1781091281827685600_000010 city=大连市 source=amap days=4
+time=2026-06-10T19:34:42.148+08:00 level=INFO msg="weather usecase forecast completed" request_id=req_1781091281827685600_000010 city=大连 days=4 duration_ms=320
+time=2026-06-10T19:34:42.151+08:00 level=INFO msg="http request completed" request_id=req_1781091281827685600_000010 method=GET path=/weather/forecast status=200 bytes=1055 duration_ms=323
+time=2026-06-10T19:37:56.784+08:00 level=INFO msg="http request started" request_id=req_1781091476784604100_000011 method=OPTIONS path=/trip/generate query="" remote_addr=127.0.0.1:61327
+time=2026-06-10T19:37:56.785+08:00 level=INFO msg="http request completed" request_id=req_1781091476784604100_000011 method=OPTIONS path=/trip/generate status=204 bytes=0 duration_ms=0
+time=2026-06-10T19:37:56.787+08:00 level=INFO msg="http request started" request_id=req_1781091476787687800_000012 method=POST path=/trip/generate query="" remote_addr=127.0.0.1:61327
+time=2026-06-10T19:37:56.788+08:00 level=INFO msg="trip generation request decoded" request_id=req_1781091476787687800_000012 destination=运城 start_date=2026-06-12 end_date=2026-06-15 travelers=3 preferences=3
+time=2026-06-10T19:37:56.788+08:00 level=INFO msg="trip usecase generate started" request_id=req_1781091476787687800_000012 destination=运城 start_date=2026-06-12 end_date=2026-06-15
+time=2026-06-10T19:37:56.789+08:00 level=INFO msg="tool-calling agent generation started" request_id=req_1781091476787687800_000012 destination=运城 start_date=2026-06-12 end_date=2026-06-15 model=qwen3.6-flash
+time=2026-06-10T19:37:56.789+08:00 level=INFO msg="tool-calling turn started" request_id=req_1781091476787687800_000012 turn=1 messages=2
+time=2026-06-10T19:37:56.789+08:00 level=INFO msg="llm chat request started" request_id=req_1781091476787687800_000012 model=qwen3.6-flash messages=2 tools=9 url=https://dashscope.aliyuncs.com/compatible-mode/v1/chat/completions
+time=2026-06-10T19:37:59.925+08:00 level=INFO msg="llm chat request completed" request_id=req_1781091476787687800_000012 model=qwen3.6-flash status=200 choices=1 duration_ms=3135
+time=2026-06-10T19:38:00.480+08:00 level=INFO msg="tool-calling chat request completed" request_id=req_1781091476787687800_000012 model=qwen3.6-flash duration_ms=3690
+time=2026-06-10T19:38:00.481+08:00 level=INFO msg="tool-calling model selected tools" request_id=req_1781091476787687800_000012 turn=1 tool_calls=2
+time=2026-06-10T19:38:00.481+08:00 level=INFO msg="tool call started" request_id=req_1781091476787687800_000012 tool=web_research tool_call_id=call_ccc0a3bfb8114930a2a3485d
+time=2026-06-10T19:38:00.482+08:00 level=INFO msg="web research tool requested" request_id=req_1781091476787687800_000012 destination=运城 query="运城旅游攻略 自然风景 拍照 美食 四日游" top_k=5
+time=2026-06-10T19:38:00.482+08:00 level=INFO msg="web research disabled" request_id=req_1781091476787687800_000012 destination=运城 query="运城旅游攻略 自然风景 拍照 美食 四日游"
+time=2026-06-10T19:38:00.482+08:00 level=INFO msg="web research tool completed" request_id=req_1781091476787687800_000012 query="运城旅游攻略 自然风景 拍照 美食 四日游" sources=0 claims=0 contexts=0
+time=2026-06-10T19:38:00.483+08:00 level=INFO msg="tool call completed" request_id=req_1781091476787687800_000012 tool=web_research tool_call_id=call_ccc0a3bfb8114930a2a3485d done=false duration_ms=1
+time=2026-06-10T19:38:00.483+08:00 level=INFO msg="tool call started" request_id=req_1781091476787687800_000012 tool=weather_forecast tool_call_id=call_9ea82925c7dd43c7b6837b5e
+time=2026-06-10T19:38:00.484+08:00 level=INFO msg="weather forecast tool requested" request_id=req_1781091476787687800_000012 city=运城
+time=2026-06-10T19:38:00.734+08:00 level=INFO msg="weather service forecast ready" request_id=req_1781091476787687800_000012 city=运城市 source=amap days=4
+time=2026-06-10T19:38:00.735+08:00 level=INFO msg="weather forecast tool completed" request_id=req_1781091476787687800_000012 city=运城 days=4 context_added=true
+time=2026-06-10T19:38:00.736+08:00 level=INFO msg="tool call completed" request_id=req_1781091476787687800_000012 tool=weather_forecast tool_call_id=call_9ea82925c7dd43c7b6837b5e done=false duration_ms=252
+time=2026-06-10T19:38:00.736+08:00 level=INFO msg="tool-calling turn completed" request_id=req_1781091476787687800_000012 turn=1 duration_ms=3947
+time=2026-06-10T19:38:00.737+08:00 level=INFO msg="tool-calling turn started" request_id=req_1781091476787687800_000012 turn=2 messages=5
+time=2026-06-10T19:38:00.737+08:00 level=INFO msg="llm chat request started" request_id=req_1781091476787687800_000012 model=qwen3.6-flash messages=5 tools=9 url=https://dashscope.aliyuncs.com/compatible-mode/v1/chat/completions
+time=2026-06-10T19:38:02.527+08:00 level=INFO msg="llm chat request completed" request_id=req_1781091476787687800_000012 model=qwen3.6-flash status=200 choices=1 duration_ms=1790
+time=2026-06-10T19:38:02.528+08:00 level=INFO msg="tool-calling chat request completed" request_id=req_1781091476787687800_000012 model=qwen3.6-flash duration_ms=1791
+time=2026-06-10T19:38:02.529+08:00 level=INFO msg="tool-calling model selected tools" request_id=req_1781091476787687800_000012 turn=2 tool_calls=2
+time=2026-06-10T19:38:02.529+08:00 level=INFO msg="tool call started" request_id=req_1781091476787687800_000012 tool=web_research tool_call_id=call_6ce3a5289bef4a8f98916a90
+time=2026-06-10T19:38:02.530+08:00 level=INFO msg="web research tool requested" request_id=req_1781091476787687800_000012 destination=运城 query="运城 景点推荐 盐湖 关帝庙 美食" top_k=5
+time=2026-06-10T19:38:02.531+08:00 level=INFO msg="web research disabled" request_id=req_1781091476787687800_000012 destination=运城 query="运城 景点推荐 盐湖 关帝庙 美食"
+time=2026-06-10T19:38:02.531+08:00 level=INFO msg="web research tool completed" request_id=req_1781091476787687800_000012 query="运城 景点推荐 盐湖 关帝庙 美食" sources=0 claims=0 contexts=1
+time=2026-06-10T19:38:02.531+08:00 level=INFO msg="tool call completed" request_id=req_1781091476787687800_000012 tool=web_research tool_call_id=call_6ce3a5289bef4a8f98916a90 done=false duration_ms=2
+time=2026-06-10T19:38:02.532+08:00 level=INFO msg="tool call started" request_id=req_1781091476787687800_000012 tool=rag_search tool_call_id=call_f4674072ab3c434989b45b09
+time=2026-06-10T19:38:02.533+08:00 level=INFO msg="rag search tool requested" request_id=req_1781091476787687800_000012 destination=运城 preferences=3 pace=适中 top_k=8
+time=2026-06-10T19:38:02.533+08:00 level=INFO msg="rag tool search started" request_id=req_1781091476787687800_000012 destination=运城 preferences=3 pace=适中 top_k=8
+time=2026-06-10T19:38:02.534+08:00 level=INFO msg="qdrant retriever retrieve started" destination=运城 collection=travel_guides channel=dense variants=3 top_k=8
+time=2026-06-10T19:38:02.534+08:00 level=INFO msg="embedding request started" provider=ollama model=bge-m3 input_chars=77
+time=2026-06-10T19:38:04.345+08:00 level=INFO msg="embedding request completed" provider=ollama model=bge-m3 dim=1024 duration_ms=1810
+time=2026-06-10T19:38:04.346+08:00 level=INFO msg="qdrant search started" collection=travel_guides vector_dim=1024 limit=8
+time=2026-06-10T19:38:04.356+08:00 level=WARN msg="qdrant search failed" collection=travel_guides vector_dim=1024 limit=8 duration_ms=10 error="Post \"http://127.0.0.1:6334/collections/travel_guides/points/query\": net/http: HTTP/1.x transport connection broken: malformed HTTP response \"\\x00\\x00\\x12\\x04\\x00\\x00\\x00\\x00\\x00\\x00\\x04\\x00\\x10\\x00\\x00\\x00\\x05\\x00\\x00@\\x00\\x00\\x06\\x00\\x00@\\x00\""
+time=2026-06-10T19:38:04.357+08:00 level=WARN msg="qdrant retriever search failed" destination=运城 collection=travel_guides channel=dense variant=1 duration_ms=1822 error="Post \"http://127.0.0.1:6334/collections/travel_guides/points/query\": net/http: HTTP/1.x transport connection broken: malformed HTTP response \"\\x00\\x00\\x12\\x04\\x00\\x00\\x00\\x00\\x00\\x00\\x04\\x00\\x10\\x00\\x00\\x00\\x05\\x00\\x00@\\x00\\x00\\x06\\x00\\x00@\\x00\""
+time=2026-06-10T19:38:04.357+08:00 level=WARN msg="rag tool search failed" request_id=req_1781091476787687800_000012 destination=运城 duration_ms=1824 error="Post \"http://127.0.0.1:6334/collections/travel_guides/points/query\": net/http: HTTP/1.x transport connection broken: malformed HTTP response \"\\x00\\x00\\x12\\x04\\x00\\x00\\x00\\x00\\x00\\x00\\x04\\x00\\x10\\x00\\x00\\x00\\x05\\x00\\x00@\\x00\\x00\\x06\\x00\\x00@\\x00\""
+time=2026-06-10T19:38:04.358+08:00 level=WARN msg="rag search tool failed" request_id=req_1781091476787687800_000012 destination=运城 error="Post \"http://127.0.0.1:6334/collections/travel_guides/points/query\": net/http: HTTP/1.x transport connection broken: malformed HTTP response \"\\x00\\x00\\x12\\x04\\x00\\x00\\x00\\x00\\x00\\x00\\x04\\x00\\x10\\x00\\x00\\x00\\x05\\x00\\x00@\\x00\\x00\\x06\\x00\\x00@\\x00\""
+time=2026-06-10T19:38:04.358+08:00 level=WARN msg="tool call failed" request_id=req_1781091476787687800_000012 tool=rag_search tool_call_id=call_f4674072ab3c434989b45b09 done=false duration_ms=1826 error="Post \"http://127.0.0.1:6334/collections/travel_guides/points/query\": net/http: HTTP/1.x transport connection broken: malformed HTTP response \"\\x00\\x00\\x12\\x04\\x00\\x00\\x00\\x00\\x00\\x00\\x04\\x00\\x10\\x00\\x00\\x00\\x05\\x00\\x00@\\x00\\x00\\x06\\x00\\x00@\\x00\""
+time=2026-06-10T19:38:04.359+08:00 level=INFO msg="tool-calling turn completed" request_id=req_1781091476787687800_000012 turn=2 duration_ms=3622
+time=2026-06-10T19:38:04.360+08:00 level=INFO msg="tool-calling turn started" request_id=req_1781091476787687800_000012 turn=3 messages=8
+time=2026-06-10T19:38:04.360+08:00 level=INFO msg="llm chat request started" request_id=req_1781091476787687800_000012 model=qwen3.6-flash messages=8 tools=9 url=https://dashscope.aliyuncs.com/compatible-mode/v1/chat/completions
+time=2026-06-10T19:38:05.476+08:00 level=INFO msg="llm chat request completed" request_id=req_1781091476787687800_000012 model=qwen3.6-flash status=200 choices=1 duration_ms=1115
+time=2026-06-10T19:38:05.477+08:00 level=INFO msg="tool-calling chat request completed" request_id=req_1781091476787687800_000012 model=qwen3.6-flash duration_ms=1116
+time=2026-06-10T19:38:05.478+08:00 level=INFO msg="tool-calling model selected tools" request_id=req_1781091476787687800_000012 turn=3 tool_calls=1
+time=2026-06-10T19:38:05.478+08:00 level=INFO msg="tool call started" request_id=req_1781091476787687800_000012 tool=web_research tool_call_id=call_bcd91d79df2b418ebd917b06
+time=2026-06-10T19:38:05.479+08:00 level=INFO msg="web research tool requested" request_id=req_1781091476787687800_000012 destination=运城 query="运城 必去景点 解州关帝庙 盐湖 鹳雀楼 普救寺" top_k=5
+time=2026-06-10T19:38:05.479+08:00 level=INFO msg="web research disabled" request_id=req_1781091476787687800_000012 destination=运城 query="运城 必去景点 解州关帝庙 盐湖 鹳雀楼 普救寺"
+time=2026-06-10T19:38:05.479+08:00 level=INFO msg="web research tool completed" request_id=req_1781091476787687800_000012 query="运城 必去景点 解州关帝庙 盐湖 鹳雀楼 普救寺" sources=0 claims=0 contexts=1
+time=2026-06-10T19:38:05.480+08:00 level=INFO msg="tool call completed" request_id=req_1781091476787687800_000012 tool=web_research tool_call_id=call_bcd91d79df2b418ebd917b06 done=false duration_ms=2
+time=2026-06-10T19:38:05.481+08:00 level=INFO msg="tool-calling turn completed" request_id=req_1781091476787687800_000012 turn=3 duration_ms=1121
+time=2026-06-10T19:38:05.481+08:00 level=INFO msg="tool-calling turn started" request_id=req_1781091476787687800_000012 turn=4 messages=10
+time=2026-06-10T19:38:05.482+08:00 level=INFO msg="llm chat request started" request_id=req_1781091476787687800_000012 model=qwen3.6-flash messages=10 tools=9 url=https://dashscope.aliyuncs.com/compatible-mode/v1/chat/completions
+time=2026-06-10T19:38:07.830+08:00 level=INFO msg="llm chat request completed" request_id=req_1781091476787687800_000012 model=qwen3.6-flash status=200 choices=1 duration_ms=2347
+time=2026-06-10T19:38:07.831+08:00 level=INFO msg="tool-calling chat request completed" request_id=req_1781091476787687800_000012 model=qwen3.6-flash duration_ms=2348
+time=2026-06-10T19:38:07.831+08:00 level=INFO msg="tool-calling model selected tools" request_id=req_1781091476787687800_000012 turn=4 tool_calls=1
+time=2026-06-10T19:38:07.831+08:00 level=INFO msg="tool call started" request_id=req_1781091476787687800_000012 tool=generate_itinerary_draft tool_call_id=call_1d11e24a3b324b8398e3fa8a
+time=2026-06-10T19:38:07.832+08:00 level=INFO msg="planner draft tool requested" request_id=req_1781091476787687800_000012 destination=运城 day_count=4 contexts=1
+time=2026-06-10T19:38:07.833+08:00 level=INFO msg="planner tool generate started" request_id=req_1781091476787687800_000012 destination=运城 day_count=4 contexts=1
+time=2026-06-10T19:38:07.833+08:00 level=INFO msg="llm planner generate draft started" destination=运城 day_count=4 contexts=1 model=qwen3.6-flash
+time=2026-06-10T19:38:07.834+08:00 level=INFO msg="llm planner chat request started" model=qwen3.6-flash prompt_chars=443
+time=2026-06-10T19:38:07.835+08:00 level=INFO msg="llm chat request started" model=qwen3.6-flash messages=2 tools=0 url=https://dashscope.aliyuncs.com/compatible-mode/v1/chat/completions
+time=2026-06-10T19:38:50.939+08:00 level=INFO msg="llm chat request completed" model=qwen3.6-flash status=200 choices=1 duration_ms=43103
+time=2026-06-10T19:38:50.940+08:00 level=INFO msg="llm planner chat request completed" model=qwen3.6-flash duration_ms=43106
+time=2026-06-10T19:38:50.941+08:00 level=WARN msg="planner tool primary planner failed, using fallback" request_id=req_1781091476787687800_000012 destination=运城 duration_ms=43108 error="json: cannot unmarshal string into Go struct field .tips of type []string"
+time=2026-06-10T19:38:50.942+08:00 level=INFO msg="planner tool generate completed" request_id=req_1781091476787687800_000012 destination=运城 planner=fallback days=4 duration_ms=43109
+time=2026-06-10T19:38:50.943+08:00 level=INFO msg="planner draft tool completed" request_id=req_1781091476787687800_000012 trip_id=trip_运城_2026-06-12 days=4 estimated_budget=2800
+time=2026-06-10T19:38:50.944+08:00 level=INFO msg="tool call completed" request_id=req_1781091476787687800_000012 tool=generate_itinerary_draft tool_call_id=call_1d11e24a3b324b8398e3fa8a done=false duration_ms=43112
+time=2026-06-10T19:38:50.945+08:00 level=INFO msg="tool-calling turn completed" request_id=req_1781091476787687800_000012 turn=4 duration_ms=45463
+time=2026-06-10T19:38:50.945+08:00 level=INFO msg="tool-calling turn started" request_id=req_1781091476787687800_000012 turn=5 messages=12
+time=2026-06-10T19:38:50.946+08:00 level=INFO msg="llm chat request started" request_id=req_1781091476787687800_000012 model=qwen3.6-flash messages=12 tools=9 url=https://dashscope.aliyuncs.com/compatible-mode/v1/chat/completions
+time=2026-06-10T19:38:51.598+08:00 level=INFO msg="llm chat request completed" request_id=req_1781091476787687800_000012 model=qwen3.6-flash status=200 choices=1 duration_ms=652
+time=2026-06-10T19:38:51.599+08:00 level=INFO msg="tool-calling chat request completed" request_id=req_1781091476787687800_000012 model=qwen3.6-flash duration_ms=653
+time=2026-06-10T19:38:51.599+08:00 level=INFO msg="tool-calling model selected tools" request_id=req_1781091476787687800_000012 turn=5 tool_calls=1
+time=2026-06-10T19:38:51.600+08:00 level=INFO msg="tool call started" request_id=req_1781091476787687800_000012 tool=enrich_map tool_call_id=call_9b7578d46ea94160b1392052
+time=2026-06-10T19:38:51.600+08:00 level=INFO msg="map enrich tool requested" request_id=req_1781091476787687800_000012 trip_id=trip_运城_2026-06-12 days=4
+time=2026-06-10T19:38:51.601+08:00 level=INFO msg="map tool enrichment disabled" request_id=req_1781091476787687800_000012 trip_id=trip_运城_2026-06-12 destination=运城
+time=2026-06-10T19:38:51.601+08:00 level=INFO msg="map enrich tool completed" request_id=req_1781091476787687800_000012 trip_id=trip_运城_2026-06-12 days=4
+time=2026-06-10T19:38:51.602+08:00 level=INFO msg="tool call completed" request_id=req_1781091476787687800_000012 tool=enrich_map tool_call_id=call_9b7578d46ea94160b1392052 done=false duration_ms=2
+time=2026-06-10T19:38:51.602+08:00 level=INFO msg="tool-calling turn completed" request_id=req_1781091476787687800_000012 turn=5 duration_ms=657
+time=2026-06-10T19:38:51.603+08:00 level=INFO msg="tool-calling turn started" request_id=req_1781091476787687800_000012 turn=6 messages=14
+time=2026-06-10T19:38:51.603+08:00 level=INFO msg="llm chat request started" request_id=req_1781091476787687800_000012 model=qwen3.6-flash messages=14 tools=9 url=https://dashscope.aliyuncs.com/compatible-mode/v1/chat/completions
+time=2026-06-10T19:39:08.046+08:00 level=INFO msg="llm chat request completed" request_id=req_1781091476787687800_000012 model=qwen3.6-flash status=200 choices=1 duration_ms=16442
+time=2026-06-10T19:39:08.063+08:00 level=INFO msg="tool-calling chat request completed" request_id=req_1781091476787687800_000012 model=qwen3.6-flash duration_ms=16459
+time=2026-06-10T19:39:08.063+08:00 level=INFO msg="tool-calling model selected tools" request_id=req_1781091476787687800_000012 turn=6 tool_calls=1
+time=2026-06-10T19:39:08.063+08:00 level=INFO msg="tool call started" request_id=req_1781091476787687800_000012 tool=enrich_routes tool_call_id=call_13d80b4f7d41494bac9b0e12
+time=2026-06-10T19:39:08.064+08:00 level=INFO msg="route enrich tool requested" request_id=req_1781091476787687800_000012 trip_id=trip_运城_2026-06-12 days=4
+time=2026-06-10T19:39:08.064+08:00 level=INFO msg="route tool enrich started" request_id=req_1781091476787687800_000012 trip_id=trip_运城_2026-06-12 destination=运城 days=4
+time=2026-06-10T19:39:08.065+08:00 level=INFO msg="route tool enrich completed" request_id=req_1781091476787687800_000012 trip_id=trip_运城_2026-06-12 duration_ms=0
+time=2026-06-10T19:39:08.065+08:00 level=INFO msg="route enrich tool completed" request_id=req_1781091476787687800_000012 trip_id=trip_运城_2026-06-12 days=4 transport_legs=4
+time=2026-06-10T19:39:08.066+08:00 level=INFO msg="tool call completed" request_id=req_1781091476787687800_000012 tool=enrich_routes tool_call_id=call_13d80b4f7d41494bac9b0e12 done=false duration_ms=2
+time=2026-06-10T19:39:08.066+08:00 level=INFO msg="tool-calling turn completed" request_id=req_1781091476787687800_000012 turn=6 duration_ms=16463
+time=2026-06-10T19:39:08.067+08:00 level=INFO msg="tool-calling turn started" request_id=req_1781091476787687800_000012 turn=7 messages=16
+time=2026-06-10T19:39:08.067+08:00 level=INFO msg="llm chat request started" request_id=req_1781091476787687800_000012 model=qwen3.6-flash messages=16 tools=9 url=https://dashscope.aliyuncs.com/compatible-mode/v1/chat/completions
+time=2026-06-10T19:39:08.677+08:00 level=INFO msg="llm chat request completed" request_id=req_1781091476787687800_000012 model=qwen3.6-flash status=200 choices=1 duration_ms=609
+time=2026-06-10T19:39:08.678+08:00 level=INFO msg="tool-calling chat request completed" request_id=req_1781091476787687800_000012 model=qwen3.6-flash duration_ms=610
+time=2026-06-10T19:39:08.678+08:00 level=INFO msg="tool-calling model selected tools" request_id=req_1781091476787687800_000012 turn=7 tool_calls=1
+time=2026-06-10T19:39:08.679+08:00 level=INFO msg="tool call started" request_id=req_1781091476787687800_000012 tool=validate_itinerary tool_call_id=call_1c2a66d110914e599b120be7
+time=2026-06-10T19:39:08.679+08:00 level=INFO msg="itinerary validation tool completed" request_id=req_1781091476787687800_000012 trip_id=trip_运城_2026-06-12 issues=0
+time=2026-06-10T19:39:08.680+08:00 level=INFO msg="tool call completed" request_id=req_1781091476787687800_000012 tool=validate_itinerary tool_call_id=call_1c2a66d110914e599b120be7 done=false duration_ms=1
+time=2026-06-10T19:39:08.680+08:00 level=INFO msg="tool-calling turn completed" request_id=req_1781091476787687800_000012 turn=7 duration_ms=613
+time=2026-06-10T19:39:08.681+08:00 level=INFO msg="tool-calling turn started" request_id=req_1781091476787687800_000012 turn=8 messages=18
+time=2026-06-10T19:39:08.681+08:00 level=INFO msg="llm chat request started" request_id=req_1781091476787687800_000012 model=qwen3.6-flash messages=18 tools=9 url=https://dashscope.aliyuncs.com/compatible-mode/v1/chat/completions
+time=2026-06-10T19:39:09.349+08:00 level=INFO msg="llm chat request completed" request_id=req_1781091476787687800_000012 model=qwen3.6-flash status=200 choices=1 duration_ms=667
+time=2026-06-10T19:39:09.349+08:00 level=INFO msg="tool-calling chat request completed" request_id=req_1781091476787687800_000012 model=qwen3.6-flash duration_ms=668
+time=2026-06-10T19:39:09.350+08:00 level=INFO msg="tool-calling model selected tools" request_id=req_1781091476787687800_000012 turn=8 tool_calls=1
+time=2026-06-10T19:39:09.351+08:00 level=INFO msg="tool call started" request_id=req_1781091476787687800_000012 tool=finish_itinerary tool_call_id=call_fb05f71a2565432899956fcb
+time=2026-06-10T19:39:09.351+08:00 level=INFO msg="tool call completed" request_id=req_1781091476787687800_000012 tool=finish_itinerary tool_call_id=call_fb05f71a2565432899956fcb done=true duration_ms=0
+time=2026-06-10T19:39:09.352+08:00 level=INFO msg="tool-calling loop finished" request_id=req_1781091476787687800_000012 turn=8 duration_ms=670
+time=2026-06-10T19:39:09.352+08:00 level=INFO msg="map tool enrichment disabled" request_id=req_1781091476787687800_000012 trip_id=trip_运城_2026-06-12 destination=运城
+time=2026-06-10T19:39:09.353+08:00 level=INFO msg="route tool enrich started" request_id=req_1781091476787687800_000012 trip_id=trip_运城_2026-06-12 destination=运城 days=4
+time=2026-06-10T19:39:09.353+08:00 level=INFO msg="route tool enrich completed" request_id=req_1781091476787687800_000012 trip_id=trip_运城_2026-06-12 duration_ms=0
+time=2026-06-10T19:39:09.354+08:00 level=INFO msg="tool-calling agent generation completed" request_id=req_1781091476787687800_000012 trip_id=trip_运城_2026-06-12 days=4 trace_steps=21 tool_observations=10 duration_ms=72564
+time=2026-06-10T19:39:09.354+08:00 level=INFO msg="trip usecase generate completed" request_id=req_1781091476787687800_000012 trip_id=trip_运城_2026-06-12 destination=运城 days=4 estimated_budget=2800 duration_ms=72565
+time=2026-06-10T19:39:09.355+08:00 level=INFO msg="http request completed" request_id=req_1781091476787687800_000012 method=POST path=/trip/generate status=200 bytes=4281 duration_ms=72567
+time=2026-06-10T19:39:09.375+08:00 level=INFO msg="http request started" request_id=req_1781091549375702900_000013 method=GET path=/weather/forecast query="city=%E8%BF%90%E5%9F%8E" remote_addr=127.0.0.1:61327
+time=2026-06-10T19:39:09.376+08:00 level=INFO msg="weather usecase forecast started" request_id=req_1781091549375702900_000013 city=运城
+time=2026-06-10T19:39:09.689+08:00 level=INFO msg="weather service forecast ready" request_id=req_1781091549375702900_000013 city=运城市 source=amap days=4
+time=2026-06-10T19:39:09.689+08:00 level=INFO msg="weather usecase forecast completed" request_id=req_1781091549375702900_000013 city=运城 days=4 duration_ms=313
+time=2026-06-10T19:39:09.690+08:00 level=INFO msg="http request completed" request_id=req_1781091549375702900_000013 method=GET path=/weather/forecast status=200 bytes=988 duration_ms=314
+time=2026-06-10T19:53:42.412+08:00 level=INFO msg="http request started" request_id=req_1781092422412863700_000014 method=GET path=/weather/forecast query="city=%E8%BF%90%E5%9F%8E" remote_addr=127.0.0.1:55023
+time=2026-06-10T19:53:42.413+08:00 level=INFO msg="weather usecase forecast started" request_id=req_1781092422412863700_000014 city=运城
+time=2026-06-10T19:53:42.680+08:00 level=INFO msg="weather service forecast ready" request_id=req_1781092422412863700_000014 city=运城市 source=amap days=4
+time=2026-06-10T19:53:42.683+08:00 level=INFO msg="weather usecase forecast completed" request_id=req_1781092422412863700_000014 city=运城 days=4 duration_ms=269
+time=2026-06-10T19:53:42.683+08:00 level=INFO msg="http request completed" request_id=req_1781092422412863700_000014 method=GET path=/weather/forecast status=200 bytes=988 duration_ms=270
+time=2026-06-10T19:53:46.468+08:00 level=INFO msg="http request started" request_id=req_1781092426468445300_000015 method=GET path=/weather/forecast query="city=%E8%BF%90%E5%9F%8E" remote_addr=127.0.0.1:55023
+time=2026-06-10T19:53:46.469+08:00 level=INFO msg="weather usecase forecast started" request_id=req_1781092426468445300_000015 city=运城
+time=2026-06-10T19:53:46.753+08:00 level=INFO msg="weather service forecast ready" request_id=req_1781092426468445300_000015 city=运城市 source=amap days=4
+time=2026-06-10T19:53:46.789+08:00 level=INFO msg="weather usecase forecast completed" request_id=req_1781092426468445300_000015 city=运城 days=4 duration_ms=319
+time=2026-06-10T19:53:46.790+08:00 level=INFO msg="http request completed" request_id=req_1781092426468445300_000015 method=GET path=/weather/forecast status=200 bytes=988 duration_ms=321
+time=2026-06-10T19:54:04.637+08:00 level=INFO msg="http request started" request_id=req_1781092444637379500_000016 method=OPTIONS path=/trip/generate query="" remote_addr=127.0.0.1:55023
+time=2026-06-10T19:54:04.637+08:00 level=INFO msg="http request completed" request_id=req_1781092444637379500_000016 method=OPTIONS path=/trip/generate status=204 bytes=0 duration_ms=0
+time=2026-06-10T19:54:04.639+08:00 level=INFO msg="http request started" request_id=req_1781092444639950200_000017 method=POST path=/trip/generate query="" remote_addr=127.0.0.1:55023
+time=2026-06-10T19:54:04.640+08:00 level=INFO msg="trip generation request decoded" request_id=req_1781092444639950200_000017 destination=运城 start_date=2026-06-10 end_date=2026-06-12 travelers=2 preferences=3
+time=2026-06-10T19:54:04.640+08:00 level=INFO msg="trip usecase generate started" request_id=req_1781092444639950200_000017 destination=运城 start_date=2026-06-10 end_date=2026-06-12
+time=2026-06-10T19:54:04.640+08:00 level=INFO msg="tool-calling agent generation started" request_id=req_1781092444639950200_000017 destination=运城 start_date=2026-06-10 end_date=2026-06-12 model=qwen3.6-flash
+time=2026-06-10T19:54:04.641+08:00 level=INFO msg="tool-calling turn started" request_id=req_1781092444639950200_000017 turn=1 messages=2
+time=2026-06-10T19:54:04.642+08:00 level=INFO msg="llm chat request started" request_id=req_1781092444639950200_000017 model=qwen3.6-flash messages=2 tools=9 url=https://dashscope.aliyuncs.com/compatible-mode/v1/chat/completions
+time=2026-06-10T19:54:11.629+08:00 level=INFO msg="llm chat request completed" request_id=req_1781092444639950200_000017 model=qwen3.6-flash status=200 choices=1 duration_ms=6987
+time=2026-06-10T19:54:11.630+08:00 level=INFO msg="tool-calling chat request completed" request_id=req_1781092444639950200_000017 model=qwen3.6-flash duration_ms=6988
+time=2026-06-10T19:54:11.631+08:00 level=INFO msg="tool-calling model selected tools" request_id=req_1781092444639950200_000017 turn=1 tool_calls=3
+time=2026-06-10T19:54:11.632+08:00 level=INFO msg="tool call started" request_id=req_1781092444639950200_000017 tool=web_research tool_call_id=call_6371647c227849899bf7b535
+time=2026-06-10T19:54:11.632+08:00 level=INFO msg="web research tool requested" request_id=req_1781092444639950200_000017 destination=运城 query="运城 旅游攻略 自然风光 美食 拍照 三日游" top_k=5
+time=2026-06-10T19:54:11.634+08:00 level=INFO msg="web research disabled" request_id=req_1781092444639950200_000017 destination=运城 query="运城 旅游攻略 自然风光 美食 拍照 三日游"
+time=2026-06-10T19:54:11.634+08:00 level=INFO msg="web research tool completed" request_id=req_1781092444639950200_000017 query="运城 旅游攻略 自然风光 美食 拍照 三日游" sources=0 claims=0 contexts=0
+time=2026-06-10T19:54:11.635+08:00 level=INFO msg="tool call completed" request_id=req_1781092444639950200_000017 tool=web_research tool_call_id=call_6371647c227849899bf7b535 done=false duration_ms=2
+time=2026-06-10T19:54:11.635+08:00 level=INFO msg="tool call started" request_id=req_1781092444639950200_000017 tool=rag_search tool_call_id=call_fd8d3499fce044f6afef6687
+time=2026-06-10T19:54:11.637+08:00 level=INFO msg="rag search tool requested" request_id=req_1781092444639950200_000017 destination=运城 preferences=3 pace=轻松 top_k=5
+time=2026-06-10T19:54:11.637+08:00 level=INFO msg="rag tool search started" request_id=req_1781092444639950200_000017 destination=运城 preferences=3 pace=轻松 top_k=5
+time=2026-06-10T19:54:11.638+08:00 level=INFO msg="qdrant retriever retrieve started" destination=运城 collection=travel_guides channel=dense variants=3 top_k=5
+time=2026-06-10T19:54:11.639+08:00 level=INFO msg="embedding request started" provider=ollama model=bge-m3 input_chars=77
+time=2026-06-10T19:54:29.125+08:00 level=INFO msg="embedding request completed" provider=ollama model=bge-m3 dim=1024 duration_ms=17486
+time=2026-06-10T19:54:29.128+08:00 level=INFO msg="qdrant search started" collection=travel_guides vector_dim=1024 limit=5
+time=2026-06-10T19:54:29.194+08:00 level=WARN msg="qdrant search failed" collection=travel_guides vector_dim=1024 limit=5 duration_ms=66 error="Post \"http://127.0.0.1:6334/collections/travel_guides/points/query\": net/http: HTTP/1.x transport connection broken: malformed HTTP response \"\\x00\\x00\\x12\\x04\\x00\\x00\\x00\\x00\\x00\\x00\\x04\\x00\\x10\\x00\\x00\\x00\\x05\\x00\\x00@\\x00\\x00\\x06\\x00\\x00@\\x00\""
+time=2026-06-10T19:54:29.203+08:00 level=WARN msg="qdrant retriever search failed" destination=运城 collection=travel_guides channel=dense variant=1 duration_ms=17564 error="Post \"http://127.0.0.1:6334/collections/travel_guides/points/query\": net/http: HTTP/1.x transport connection broken: malformed HTTP response \"\\x00\\x00\\x12\\x04\\x00\\x00\\x00\\x00\\x00\\x00\\x04\\x00\\x10\\x00\\x00\\x00\\x05\\x00\\x00@\\x00\\x00\\x06\\x00\\x00@\\x00\""
+time=2026-06-10T19:54:29.204+08:00 level=WARN msg="rag tool search failed" request_id=req_1781092444639950200_000017 destination=运城 duration_ms=17566 error="Post \"http://127.0.0.1:6334/collections/travel_guides/points/query\": net/http: HTTP/1.x transport connection broken: malformed HTTP response \"\\x00\\x00\\x12\\x04\\x00\\x00\\x00\\x00\\x00\\x00\\x04\\x00\\x10\\x00\\x00\\x00\\x05\\x00\\x00@\\x00\\x00\\x06\\x00\\x00@\\x00\""
+time=2026-06-10T19:54:29.205+08:00 level=WARN msg="rag search tool failed" request_id=req_1781092444639950200_000017 destination=运城 error="Post \"http://127.0.0.1:6334/collections/travel_guides/points/query\": net/http: HTTP/1.x transport connection broken: malformed HTTP response \"\\x00\\x00\\x12\\x04\\x00\\x00\\x00\\x00\\x00\\x00\\x04\\x00\\x10\\x00\\x00\\x00\\x05\\x00\\x00@\\x00\\x00\\x06\\x00\\x00@\\x00\""
+time=2026-06-10T19:54:29.205+08:00 level=WARN msg="tool call failed" request_id=req_1781092444639950200_000017 tool=rag_search tool_call_id=call_fd8d3499fce044f6afef6687 done=false duration_ms=17569 error="Post \"http://127.0.0.1:6334/collections/travel_guides/points/query\": net/http: HTTP/1.x transport connection broken: malformed HTTP response \"\\x00\\x00\\x12\\x04\\x00\\x00\\x00\\x00\\x00\\x00\\x04\\x00\\x10\\x00\\x00\\x00\\x05\\x00\\x00@\\x00\\x00\\x06\\x00\\x00@\\x00\""
+time=2026-06-10T19:54:29.206+08:00 level=INFO msg="tool call started" request_id=req_1781092444639950200_000017 tool=weather_forecast tool_call_id=call_6d16a446feee4504b42100d3
+time=2026-06-10T19:54:29.206+08:00 level=INFO msg="weather forecast tool requested" request_id=req_1781092444639950200_000017 city=运城
+time=2026-06-10T19:54:29.605+08:00 level=INFO msg="weather service forecast ready" request_id=req_1781092444639950200_000017 city=运城市 source=amap days=4
+time=2026-06-10T19:54:29.606+08:00 level=INFO msg="weather forecast tool completed" request_id=req_1781092444639950200_000017 city=运城 days=4 context_added=true
+time=2026-06-10T19:54:29.606+08:00 level=INFO msg="tool call completed" request_id=req_1781092444639950200_000017 tool=weather_forecast tool_call_id=call_6d16a446feee4504b42100d3 done=false duration_ms=400
+time=2026-06-10T19:54:29.607+08:00 level=INFO msg="tool-calling turn completed" request_id=req_1781092444639950200_000017 turn=1 duration_ms=24965
+time=2026-06-10T19:54:29.607+08:00 level=INFO msg="tool-calling turn started" request_id=req_1781092444639950200_000017 turn=2 messages=6
+time=2026-06-10T19:54:29.608+08:00 level=INFO msg="llm chat request started" request_id=req_1781092444639950200_000017 model=qwen3.6-flash messages=6 tools=9 url=https://dashscope.aliyuncs.com/compatible-mode/v1/chat/completions
+time=2026-06-10T19:54:32.606+08:00 level=INFO msg="llm chat request completed" request_id=req_1781092444639950200_000017 model=qwen3.6-flash status=200 choices=1 duration_ms=2999
+time=2026-06-10T19:54:32.607+08:00 level=INFO msg="tool-calling chat request completed" request_id=req_1781092444639950200_000017 model=qwen3.6-flash duration_ms=2999
+time=2026-06-10T19:54:32.607+08:00 level=INFO msg="tool-calling model selected tools" request_id=req_1781092444639950200_000017 turn=2 tool_calls=1
+time=2026-06-10T19:54:32.608+08:00 level=INFO msg="tool call started" request_id=req_1781092444639950200_000017 tool=generate_itinerary_draft tool_call_id=call_ce08dc92c08445e49b2d6c63
+time=2026-06-10T19:54:32.609+08:00 level=INFO msg="planner draft tool requested" request_id=req_1781092444639950200_000017 destination=运城 day_count=3 contexts=1
+time=2026-06-10T19:54:32.609+08:00 level=INFO msg="planner tool generate started" request_id=req_1781092444639950200_000017 destination=运城 day_count=3 contexts=1
+time=2026-06-10T19:54:32.610+08:00 level=INFO msg="llm planner generate draft started" destination=运城 day_count=3 contexts=1 model=qwen3.6-flash
+time=2026-06-10T19:54:32.610+08:00 level=INFO msg="llm planner chat request started" model=qwen3.6-flash prompt_chars=445
+time=2026-06-10T19:54:32.611+08:00 level=INFO msg="llm chat request started" model=qwen3.6-flash messages=2 tools=0 url=https://dashscope.aliyuncs.com/compatible-mode/v1/chat/completions
+time=2026-06-10T19:55:16.083+08:00 level=INFO msg="llm chat request completed" model=qwen3.6-flash status=200 choices=1 duration_ms=43472
+time=2026-06-10T19:55:16.083+08:00 level=INFO msg="llm planner chat request completed" model=qwen3.6-flash duration_ms=43473
+time=2026-06-10T19:55:16.085+08:00 level=WARN msg="planner tool primary planner failed, using fallback" request_id=req_1781092444639950200_000017 destination=运城 duration_ms=43475 error="json: cannot unmarshal string into Go struct field .tips of type []string"
+time=2026-06-10T19:55:16.085+08:00 level=INFO msg="planner tool generate completed" request_id=req_1781092444639950200_000017 destination=运城 planner=fallback days=3 duration_ms=43476
+time=2026-06-10T19:55:16.086+08:00 level=INFO msg="planner draft tool completed" request_id=req_1781092444639950200_000017 trip_id=trip_运城_2026-06-10 days=3 estimated_budget=3033
+time=2026-06-10T19:55:16.087+08:00 level=INFO msg="tool call completed" request_id=req_1781092444639950200_000017 tool=generate_itinerary_draft tool_call_id=call_ce08dc92c08445e49b2d6c63 done=false duration_ms=43478
+time=2026-06-10T19:55:16.087+08:00 level=INFO msg="tool-calling turn completed" request_id=req_1781092444639950200_000017 turn=2 duration_ms=46480
+time=2026-06-10T19:55:16.088+08:00 level=INFO msg="tool-calling turn started" request_id=req_1781092444639950200_000017 turn=3 messages=8
+time=2026-06-10T19:55:16.089+08:00 level=INFO msg="llm chat request started" request_id=req_1781092444639950200_000017 model=qwen3.6-flash messages=8 tools=9 url=https://dashscope.aliyuncs.com/compatible-mode/v1/chat/completions
+time=2026-06-10T19:55:16.637+08:00 level=INFO msg="llm chat request completed" request_id=req_1781092444639950200_000017 model=qwen3.6-flash status=200 choices=1 duration_ms=547
+time=2026-06-10T19:55:16.638+08:00 level=INFO msg="tool-calling chat request completed" request_id=req_1781092444639950200_000017 model=qwen3.6-flash duration_ms=548
+time=2026-06-10T19:55:16.638+08:00 level=INFO msg="tool-calling model selected tools" request_id=req_1781092444639950200_000017 turn=3 tool_calls=1
+time=2026-06-10T19:55:16.639+08:00 level=INFO msg="tool call started" request_id=req_1781092444639950200_000017 tool=enrich_map tool_call_id=call_9e955e17869240c882e7d3b3
+time=2026-06-10T19:55:16.639+08:00 level=INFO msg="map enrich tool requested" request_id=req_1781092444639950200_000017 trip_id=trip_运城_2026-06-10 days=3
+time=2026-06-10T19:55:16.640+08:00 level=INFO msg="map tool enrichment disabled" request_id=req_1781092444639950200_000017 trip_id=trip_运城_2026-06-10 destination=运城
+time=2026-06-10T19:55:16.640+08:00 level=INFO msg="map enrich tool completed" request_id=req_1781092444639950200_000017 trip_id=trip_运城_2026-06-10 days=3
+time=2026-06-10T19:55:16.641+08:00 level=INFO msg="tool call completed" request_id=req_1781092444639950200_000017 tool=enrich_map tool_call_id=call_9e955e17869240c882e7d3b3 done=false duration_ms=1
+time=2026-06-10T19:55:16.641+08:00 level=INFO msg="tool-calling turn completed" request_id=req_1781092444639950200_000017 turn=3 duration_ms=553
+time=2026-06-10T19:55:16.642+08:00 level=INFO msg="tool-calling turn started" request_id=req_1781092444639950200_000017 turn=4 messages=10
+time=2026-06-10T19:55:16.642+08:00 level=INFO msg="llm chat request started" request_id=req_1781092444639950200_000017 model=qwen3.6-flash messages=10 tools=9 url=https://dashscope.aliyuncs.com/compatible-mode/v1/chat/completions
+time=2026-06-10T19:55:26.361+08:00 level=INFO msg="llm chat request completed" request_id=req_1781092444639950200_000017 model=qwen3.6-flash status=200 choices=1 duration_ms=9718
+time=2026-06-10T19:55:26.362+08:00 level=INFO msg="tool-calling chat request completed" request_id=req_1781092444639950200_000017 model=qwen3.6-flash duration_ms=9719
+time=2026-06-10T19:55:26.362+08:00 level=INFO msg="tool-calling model selected tools" request_id=req_1781092444639950200_000017 turn=4 tool_calls=1
+time=2026-06-10T19:55:26.363+08:00 level=INFO msg="tool call started" request_id=req_1781092444639950200_000017 tool=enrich_routes tool_call_id=call_d6640cab982249e7ac8b9bee
+time=2026-06-10T19:55:26.363+08:00 level=INFO msg="route enrich tool requested" request_id=req_1781092444639950200_000017 trip_id=trip_运城_2026-06-10 days=3
+time=2026-06-10T19:55:26.364+08:00 level=INFO msg="route tool enrich started" request_id=req_1781092444639950200_000017 trip_id=trip_运城_2026-06-10 destination=运城 days=3
+time=2026-06-10T19:55:26.364+08:00 level=INFO msg="route tool enrich completed" request_id=req_1781092444639950200_000017 trip_id=trip_运城_2026-06-10 duration_ms=0
+time=2026-06-10T19:55:26.365+08:00 level=INFO msg="route enrich tool completed" request_id=req_1781092444639950200_000017 trip_id=trip_运城_2026-06-10 days=3 transport_legs=3
+time=2026-06-10T19:55:26.366+08:00 level=INFO msg="tool call completed" request_id=req_1781092444639950200_000017 tool=enrich_routes tool_call_id=call_d6640cab982249e7ac8b9bee done=false duration_ms=2
+time=2026-06-10T19:55:26.366+08:00 level=INFO msg="tool-calling turn completed" request_id=req_1781092444639950200_000017 turn=4 duration_ms=9724
+time=2026-06-10T19:55:26.367+08:00 level=INFO msg="tool-calling turn started" request_id=req_1781092444639950200_000017 turn=5 messages=12
+time=2026-06-10T19:55:26.367+08:00 level=INFO msg="llm chat request started" request_id=req_1781092444639950200_000017 model=qwen3.6-flash messages=12 tools=9 url=https://dashscope.aliyuncs.com/compatible-mode/v1/chat/completions
+time=2026-06-10T19:55:27.175+08:00 level=INFO msg="llm chat request completed" request_id=req_1781092444639950200_000017 model=qwen3.6-flash status=200 choices=1 duration_ms=807
+time=2026-06-10T19:55:27.176+08:00 level=INFO msg="tool-calling chat request completed" request_id=req_1781092444639950200_000017 model=qwen3.6-flash duration_ms=808
+time=2026-06-10T19:55:27.176+08:00 level=INFO msg="tool-calling model selected tools" request_id=req_1781092444639950200_000017 turn=5 tool_calls=1
+time=2026-06-10T19:55:27.177+08:00 level=INFO msg="tool call started" request_id=req_1781092444639950200_000017 tool=validate_itinerary tool_call_id=call_898115dbb62e4eecaa56394c
+time=2026-06-10T19:55:27.177+08:00 level=INFO msg="itinerary validation tool completed" request_id=req_1781092444639950200_000017 trip_id=trip_运城_2026-06-10 issues=0
+time=2026-06-10T19:55:27.178+08:00 level=INFO msg="tool call completed" request_id=req_1781092444639950200_000017 tool=validate_itinerary tool_call_id=call_898115dbb62e4eecaa56394c done=false duration_ms=1
+time=2026-06-10T19:55:27.178+08:00 level=INFO msg="tool-calling turn completed" request_id=req_1781092444639950200_000017 turn=5 duration_ms=811
+time=2026-06-10T19:55:27.179+08:00 level=INFO msg="tool-calling turn started" request_id=req_1781092444639950200_000017 turn=6 messages=14
+time=2026-06-10T19:55:27.179+08:00 level=INFO msg="llm chat request started" request_id=req_1781092444639950200_000017 model=qwen3.6-flash messages=14 tools=9 url=https://dashscope.aliyuncs.com/compatible-mode/v1/chat/completions
+time=2026-06-10T19:55:27.902+08:00 level=INFO msg="llm chat request completed" request_id=req_1781092444639950200_000017 model=qwen3.6-flash status=200 choices=1 duration_ms=722
+time=2026-06-10T19:55:27.903+08:00 level=INFO msg="tool-calling chat request completed" request_id=req_1781092444639950200_000017 model=qwen3.6-flash duration_ms=723
+time=2026-06-10T19:55:27.903+08:00 level=INFO msg="tool-calling model selected tools" request_id=req_1781092444639950200_000017 turn=6 tool_calls=1
+time=2026-06-10T19:55:27.904+08:00 level=INFO msg="tool call started" request_id=req_1781092444639950200_000017 tool=finish_itinerary tool_call_id=call_48212ebd832d410ba3e3eca0
+time=2026-06-10T19:55:27.904+08:00 level=INFO msg="tool call completed" request_id=req_1781092444639950200_000017 tool=finish_itinerary tool_call_id=call_48212ebd832d410ba3e3eca0 done=true duration_ms=0
+time=2026-06-10T19:55:27.905+08:00 level=INFO msg="tool-calling loop finished" request_id=req_1781092444639950200_000017 turn=6 duration_ms=726
+time=2026-06-10T19:55:27.905+08:00 level=INFO msg="map tool enrichment disabled" request_id=req_1781092444639950200_000017 trip_id=trip_运城_2026-06-10 destination=运城
+time=2026-06-10T19:55:27.906+08:00 level=INFO msg="route tool enrich started" request_id=req_1781092444639950200_000017 trip_id=trip_运城_2026-06-10 destination=运城 days=3
+time=2026-06-10T19:55:27.906+08:00 level=INFO msg="route tool enrich completed" request_id=req_1781092444639950200_000017 trip_id=trip_运城_2026-06-10 duration_ms=0
+time=2026-06-10T19:55:27.907+08:00 level=INFO msg="tool-calling agent generation completed" request_id=req_1781092444639950200_000017 trip_id=trip_运城_2026-06-10 days=3 trace_steps=17 tool_observations=8 duration_ms=83266
+time=2026-06-10T19:55:27.907+08:00 level=INFO msg="trip usecase generate completed" request_id=req_1781092444639950200_000017 trip_id=trip_运城_2026-06-10 destination=运城 days=3 estimated_budget=3010.56 duration_ms=83267
+time=2026-06-10T19:55:27.908+08:00 level=INFO msg="http request completed" request_id=req_1781092444639950200_000017 method=POST path=/trip/generate status=200 bytes=3435 duration_ms=83268
+time=2026-06-10T19:55:27.916+08:00 level=INFO msg="http request started" request_id=req_1781092527916688000_000018 method=GET path=/weather/forecast query="city=%E8%BF%90%E5%9F%8E" remote_addr=127.0.0.1:55023
+time=2026-06-10T19:55:27.917+08:00 level=INFO msg="weather usecase forecast started" request_id=req_1781092527916688000_000018 city=运城
+time=2026-06-10T19:55:28.226+08:00 level=INFO msg="weather service forecast ready" request_id=req_1781092527916688000_000018 city=运城市 source=amap days=4
+time=2026-06-10T19:55:28.227+08:00 level=INFO msg="weather usecase forecast completed" request_id=req_1781092527916688000_000018 city=运城 days=4 duration_ms=310
+time=2026-06-10T19:55:28.227+08:00 level=INFO msg="http request completed" request_id=req_1781092527916688000_000018 method=GET path=/weather/forecast status=200 bytes=988 duration_ms=311

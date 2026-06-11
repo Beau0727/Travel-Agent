@@ -1,0 +1,29 @@
+
+> trip-planner-frontend@0.1.0 dev
+> vite --host 127.0.0.1
+
+
+  [32m[1mVITE[22m v6.4.2[39m  [2mready in [0m[1m672[22m[2m[0m ms[22m
+
+  [32m➜[39m  [1mLocal[22m:   [36mhttp://127.0.0.1:[1m5173[22m/[39m
+[2m18:15:37[22m [36m[1m[vite][22m[39m changed tsconfig file detected: F:/Code/Travel-Agent/frontend/tsconfig.json - Clearing cache and forcing full-reload to ensure TypeScript is compiled with updated config values.
+[2m11:21:25[22m [36m[1m[vite][22m[39m changed tsconfig file detected: F:/Code/Travel-Agent/frontend/tsconfig.json - Clearing cache and forcing full-reload to ensure TypeScript is compiled with updated config values.
+[2m16:12:46[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/views/Result.vue[22m
+[2m16:13:06[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/views/Result.vue[22m
+[2m16:13:06[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/views/Result.vue[22m
+[2m16:15:21[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/views/Result.vue[22m
+[2m16:16:20[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/views/Result.vue[22m
+[2m16:16:58[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/views/Result.vue?vue&type=style&index=0&scoped=7c58a347&lang.css[22m
+[2m16:18:46[22m [36m[1m[vite][22m[39m changed tsconfig file detected: F:/Code/Travel-Agent/frontend/tsconfig.json - Clearing cache and forcing full-reload to ensure TypeScript is compiled with updated config values.
+[2m16:48:45[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/views/Result.vue[22m
+[2m16:49:03[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/views/Result.vue[22m
+[2m16:49:53[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/views/Result.vue[22m
+[2m16:52:05[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/views/Result.vue[22m
+[2m16:53:09[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/views/Result.vue?vue&type=style&index=0&scoped=7c58a347&lang.css[22m
+[2m20:01:02[22m [36m[1m[vite][22m[39m [32m.env changed, restarting server...[39m
+[2m20:01:03[22m [36m[1m[vite][22m[39m server restarted.
+[2m21:27:33[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/views/Result.vue[22m
+[2m21:28:30[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/views/Result.vue[22m
+[2m21:32:09[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/components/AmapTripMap.vue[22m
+[2m21:32:20[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/components/AmapTripMap.vue[22m
+[2m21:32:39[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/views/Result.vue?vue&type=style&index=0&scoped=7c58a347&lang.css[22m

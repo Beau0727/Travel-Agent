@@ -1,6 +1,6 @@
 package storage
 
-import "zhilv-yuntu-go/internal/domain"
+import "travel-agent-go/internal/domain"
 
 // TripRepository 是“仓储模式”的接口。
 // 业务层只依赖这个接口，而不关心底层是 JSON 文件、SQLite、MySQL 还是云数据库。

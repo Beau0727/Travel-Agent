@@ -78,7 +78,7 @@ function navigate(view: "home" | "result" | "history") {
           <MapPinned :size="22" stroke-width="2.4" />
         </span>
         <span>
-          <span class="brand-name">智旅云图</span>
+          <span class="brand-name">旅行助手</span>
           <span class="brand-subtitle">AI Travel Console</span>
         </span>
       </button>

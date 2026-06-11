@@ -8,11 +8,13 @@ import {
   CloudRain,
   CloudSun,
   Download,
+  ExternalLink,
   Hotel,
   MapPinned,
   PencilLine,
   Route,
   Save,
+  ShieldCheck,
   Sparkles,
   Ticket,
   TramFront,
@@ -28,7 +30,15 @@ import {
   getMarkdownExportUrl,
   saveTrip,
 } from "../services/api";
-import type { DayPlan, Itinerary, WeatherForecastResponse } from "../types";
+import type {
+  DayPlan,
+  EvidenceClaim,
+  EvidenceSource,
+  Itinerary,
+  TransportItem,
+  TripEditMessage,
+  WeatherForecastResponse,
+} from "../types";
 
 const props = defineProps<{
   itinerary: Itinerary | null;
@@ -48,6 +58,7 @@ const editInstruction = ref("这一天节奏更轻松一点，减少固定安排
 const weatherLoading = ref(false);
 const weatherError = ref("");
 const weather = ref<WeatherForecastResponse | null>(null);
+const failedImageUrls = ref<Set<string>>(new Set());
 
 function formatShortDate(dateText?: string | null): string {
   if (!dateText) {
@@ -82,6 +93,17 @@ function money(value?: number | null): string {
 
 function joinPlaces(item: { from_place?: string | null; to_place?: string | null }): string {
   return [item.from_place, item.to_place].filter(Boolean).join(" → ") || "路线待补充";
+}
+
+function hasUsableImage(url?: string | null): url is string {
+  return Boolean(url && !failedImageUrls.value.has(url));
+}
+
+function markImageFailed(url?: string | null) {
+  if (!url) {
+    return;
+  }
+  failedImageUrls.value = new Set([...failedImageUrls.value, url]);
 }
 
 const dateRange = computed(() => {
@@ -173,12 +195,92 @@ const mapPoints = computed(() => {
       latitude: meal.latitude,
       longitude: meal.longitude,
       poiId: meal.poi_id,
-      imageUrl: null,
+      imageUrl: meal.image_url,
       description: meal.notes || "暂无说明",
     }));
 
     return [...spotPoints, ...mealPoints];
   });
+});
+
+const routePolylines = computed(() => {
+  if (!props.itinerary) {
+    return [];
+  }
+
+  return props.itinerary.days.flatMap((day) =>
+    day.transport
+      .map((item) => item.polyline?.trim())
+      .filter((polyline): polyline is string => Boolean(polyline))
+  );
+});
+
+const routedLegCount = computed(() => {
+  if (!props.itinerary) {
+    return 0;
+  }
+
+  return props.itinerary.days.reduce(
+    (sum, day) => sum + day.transport.filter((item) => item.route_status === "ok").length,
+    0
+  );
+});
+
+const editMessages = computed<TripEditMessage[]>(() => {
+  return props.itinerary?.edit_messages ?? [];
+});
+
+const lastChangeSummary = computed(() => {
+  return props.itinerary?.last_change_summary ?? [];
+});
+
+const editIssues = computed(() => {
+  return props.itinerary?.edit_issues ?? [];
+});
+
+const editRevisionCount = computed(() => {
+  return props.itinerary?.edit_revisions?.length ?? 0;
+});
+
+const evidence = computed(() => props.itinerary?.evidence ?? null);
+
+const evidenceClaims = computed(() => {
+  return evidence.value?.claims?.slice(0, 6) ?? [];
+});
+
+const evidenceSources = computed(() => {
+  return evidence.value?.sources?.slice(0, 5) ?? [];
+});
+
+const evidenceWarnings = computed(() => {
+  return evidence.value?.warnings ?? [];
+});
+
+const evidenceSummary = computed(() => {
+  return evidence.value?.summary ?? [];
+});
+
+const evidenceVerificationSummary = computed(() => {
+  return evidence.value?.verification_summary ?? [];
+});
+
+const evidenceStats = computed(() => {
+  const report = evidence.value;
+  const claims = report?.claims ?? [];
+  const sources = report?.sources ?? [];
+  return {
+    sources: sources.length,
+    claims: claims.length,
+    review: claims.filter((claim) => claim.requires_review).length,
+    officialCross: claims.filter(
+      (claim) => claim.verification_status === "official_cross_verified"
+    ).length,
+    officialSources: sources.filter((source) => source.source_type === "official").length,
+    operationalSources: sources.filter(
+      (source) =>
+        source.source_type === "map_or_local_service" || source.source_type === "ticketing"
+    ).length,
+  };
 });
 
 const technicalTipKeywords = ["LLM", "RAG", "LangChain", "Chroma", "演示", "测试", "规则", "模型", "源码"];
@@ -284,6 +386,7 @@ watch(
 watch(
   () => props.itinerary?.trip_id,
   () => {
+    failedImageUrls.value = new Set();
     const firstDay = props.itinerary?.days[0];
     editScope.value = firstDay ? `day_${firstDay.day_index}` : "all";
   },
@@ -351,9 +454,12 @@ async function handleEdit() {
       current_itinerary: props.itinerary,
       user_instruction: instruction,
       edit_scope: editScope.value,
+      conversation_id: props.itinerary.edit_conversation_id,
+      messages: props.itinerary.edit_messages ?? [],
       preserve_constraints: ["保留预算结构", "保留目的地和旅行日期"],
     });
     emit("updated", updatedItinerary);
+    editInstruction.value = "";
     message.success("行程已智能调整。");
   } catch (error) {
     console.error(error);
@@ -365,6 +471,169 @@ async function handleEdit() {
 
 function dayPointCount(day: DayPlan): number {
   return day.spots.length + day.meals.length;
+}
+
+function editRoleLabel(role: string): string {
+  if (role === "user") {
+    return "你";
+  }
+  if (role === "assistant") {
+    return "助手";
+  }
+  return "工具";
+}
+
+function formatEditTime(value?: string | null): string {
+  if (!value) {
+    return "";
+  }
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) {
+    return value;
+  }
+  return date.toLocaleTimeString("zh-CN", {
+    hour: "2-digit",
+    minute: "2-digit",
+  });
+}
+
+function formatRouteDistance(item: TransportItem): string {
+  if (item.distance_meters && item.distance_meters > 0) {
+    const km = item.distance_meters / 1000;
+    return `${km.toFixed(km >= 10 ? 1 : 2)} km`;
+  }
+  if (item.distance_km != null) {
+    return `${Number(item.distance_km).toFixed(Number(item.distance_km) >= 10 ? 1 : 2)} km`;
+  }
+  return "距离待定";
+}
+
+function formatRouteDuration(item: TransportItem): string {
+  if (item.duration_seconds && item.duration_seconds > 0) {
+    const minutes = Math.round(item.duration_seconds / 60);
+    if (minutes < 60) {
+      return `${minutes} 分钟`;
+    }
+    return `${Math.floor(minutes / 60)} 小时 ${minutes % 60} 分钟`;
+  }
+  return item.duration || "时长待定";
+}
+
+function routeModeText(item: TransportItem): string {
+  if (item.route_mode === "walking") {
+    return "步行";
+  }
+  if (item.route_mode === "driving") {
+    return "驾车";
+  }
+  if (item.route_mode === "transit") {
+    return "公交";
+  }
+  return item.mode || "交通";
+}
+
+function routeStatusText(item: TransportItem): string {
+  if (item.route_status === "ok") {
+    return item.route_provider === "amap" ? "高德实算" : "已规划";
+  }
+  if (item.route_status === "failed") {
+    return "规划失败";
+  }
+  return "估算";
+}
+
+function routeMeta(item: TransportItem): string {
+  return [
+    routeStatusText(item),
+    routeModeText(item),
+    formatRouteDistance(item),
+    formatRouteDuration(item),
+    item.route_mode === "walking" ? "免费" : money(item.estimated_cost),
+  ].join(" · ");
+}
+
+function weatherSourceLabel(source?: string | null): string {
+  if (source === "amap") {
+    return "高德天气";
+  }
+  if (source === "demo" || source === "demo_fallback") {
+    return "示例天气";
+  }
+  return "天气数据";
+}
+
+function confidenceText(value?: number | null): string {
+  return `${Math.round((value ?? 0) * 100)}%`;
+}
+
+function evidenceStatusText(status?: string | null): string {
+  if (status === "supported") {
+    return "已支持";
+  }
+  if (status === "needs_review") {
+    return "待确认";
+  }
+  return "弱支持";
+}
+
+function verificationStatusText(status?: string | null): string {
+  const labels: Record<string, string> = {
+    official_cross_verified: "官网交叉验证",
+    official_supported: "官方支持",
+    map_ticketing_cross_verified: "地图票务互证",
+    multi_source_supported: "多来源支持",
+    single_source: "单一来源",
+    unverified: "未验证",
+  };
+  return status ? labels[status] || status : "未验证";
+}
+
+function verificationRoleText(role?: string | null): string {
+  const labels: Record<string, string> = {
+    official: "官网/官方",
+    map: "地图/本地",
+    ticketing: "票务/预约",
+    travel_platform: "旅行平台",
+    community: "社区内容",
+    web: "普通网页",
+  };
+  return role ? labels[role] || role : "来源";
+}
+
+function verificationChannelsText(channels?: string[]): string {
+  return (channels ?? []).map((channel) => verificationRoleText(channel)).join("、");
+}
+
+function claimTypeText(type?: string | null): string {
+  const labels: Record<string, string> = {
+    attraction: "景点",
+    food: "餐饮",
+    transport: "交通",
+    caution: "注意",
+    volatile: "易变",
+    general: "综合",
+  };
+  return type ? labels[type] || type : "综合";
+}
+
+function sourceLabel(source: EvidenceSource): string {
+  return source.title || source.host || "在线来源";
+}
+
+function sourceMeta(source: EvidenceSource): string {
+  return [
+    verificationRoleText(source.verification_role),
+    source.reliability_label || "来源",
+    source.source_priority ? `优先级 ${source.source_priority}` : "",
+    confidenceText(source.reliability_score),
+    source.host,
+  ]
+    .filter(Boolean)
+    .join(" · ");
+}
+
+function claimSourceURL(claim: EvidenceClaim): string {
+  return claim.official_source_url || claim.source_urls?.[0] || "";
 }
 </script>
 
@@ -472,6 +741,116 @@ function dayPointCount(day: DayPlan): number {
         </div>
       </section>
 
+      <section v-if="evidence" class="evidence-panel surface-panel">
+        <div class="panel-header">
+          <div>
+            <p class="panel-kicker">Evidence</p>
+            <h3 class="panel-title">证据与可信度</h3>
+          </div>
+          <span class="metric-chip">
+            <ShieldCheck :size="15" />
+            {{ evidenceStats.sources }} 个来源
+          </span>
+        </div>
+
+        <div class="evidence-grid">
+          <div class="evidence-meter">
+            <article>
+              <strong>{{ evidenceStats.claims }}</strong>
+              <span>候选事实</span>
+            </article>
+            <article>
+              <strong>{{ evidenceStats.officialCross }}</strong>
+              <span>官网交叉验证</span>
+            </article>
+            <article>
+              <strong>{{ evidenceStats.review }}</strong>
+              <span>待确认</span>
+            </article>
+            <article>
+              <strong>{{ evidenceStats.officialSources }}</strong>
+              <span>官方来源</span>
+            </article>
+            <article>
+              <strong>{{ evidenceStats.operationalSources }}</strong>
+              <span>地图/票务来源</span>
+            </article>
+            <article>
+              <strong>{{ evidenceStats.sources }}</strong>
+              <span>在线来源</span>
+            </article>
+          </div>
+
+          <div
+            class="evidence-summary"
+            v-if="evidenceSummary.length || evidenceVerificationSummary.length || evidenceWarnings.length"
+          >
+            <span v-for="item in evidenceSummary" :key="item">{{ item }}</span>
+            <span
+              v-for="item in evidenceVerificationSummary"
+              :key="item"
+              class="evidence-verification"
+            >
+              {{ item }}
+            </span>
+            <span v-for="item in evidenceWarnings" :key="item" class="evidence-warning">
+              {{ item }}
+            </span>
+          </div>
+
+          <div class="evidence-claims" v-if="evidenceClaims.length">
+            <article
+              v-for="claim in evidenceClaims"
+              :key="claim.id"
+              class="evidence-claim"
+              :class="{ 'evidence-claim--review': claim.requires_review }"
+            >
+              <div class="evidence-claim__header">
+                <strong>{{ claimTypeText(claim.claim_type) }}</strong>
+                <span>{{ evidenceStatusText(claim.status) }} · {{ confidenceText(claim.confidence) }}</span>
+              </div>
+              <div class="evidence-chip-row">
+                <span
+                  class="evidence-chip"
+                  :class="{ 'evidence-chip--strong': claim.verification_status === 'official_cross_verified' }"
+                >
+                  {{ verificationStatusText(claim.verification_status) }}
+                </span>
+                <span v-if="claim.verification_channels?.length" class="evidence-chip">
+                  {{ verificationChannelsText(claim.verification_channels) }}
+                </span>
+              </div>
+              <p>{{ claim.claim }}</p>
+              <small v-if="claim.verification_summary">{{ claim.verification_summary }}</small>
+              <small v-if="claim.reason">{{ claim.reason }}</small>
+              <a
+                v-if="claimSourceURL(claim)"
+                :href="claimSourceURL(claim)"
+                target="_blank"
+                rel="noreferrer"
+              >
+                <ExternalLink :size="13" />
+                来源
+              </a>
+            </article>
+          </div>
+
+          <div class="evidence-sources" v-if="evidenceSources.length">
+            <a
+              v-for="source in evidenceSources"
+              :key="source.id"
+              :href="source.url || '#'"
+              :class="{ 'evidence-source--disabled': !source.url }"
+              target="_blank"
+              rel="noreferrer"
+            >
+              <span>{{ sourceLabel(source) }}</span>
+              <small>{{ sourceMeta(source) }}</small>
+            </a>
+          </div>
+        </div>
+      </section>
+
       <section class="map-panel surface-panel">
         <div class="panel-header">
           <div>
@@ -480,10 +859,10 @@ function dayPointCount(day: DayPlan): number {
           </div>
           <span class="metric-chip">
             <Route :size="15" />
-            {{ mapPoints.length }} 点
+            {{ routedLegCount }} 段路线
           </span>
         </div>
-        <AmapTripMap :points="mapPoints" />
+        <AmapTripMap :points="mapPoints" :polylines="routePolylines" />
       </section>
 
       <section class="weather-panel surface-panel">
@@ -499,6 +878,10 @@ function dayPointCount(day: DayPlan): number {
         <div v-if="weatherLoading" class="state-line">正在加载天气信息...</div>
         <div v-else-if="weatherError" class="state-line">{{ weatherError }}</div>
         <div v-else-if="weather" class="weather-grid">
+          <div class="weather-meta">
+            {{ weatherSourceLabel(weather.source) }}
+            <span v-if="weather.report_time">更新：{{ weather.report_time }}</span>
+          </div>
           <article
             v-for="day in weather.days"
             :key="`${day.date}-${day.week}`"
@@ -510,7 +893,14 @@ function dayPointCount(day: DayPlan): number {
             </div>
             <div class="weather-card__desc">白天：{{ day.day_weather || "未知" }}</div>
             <div class="weather-card__desc">夜间：{{ day.night_weather || "未知" }}</div>
+            <div class="weather-card__desc" v-if="day.day_wind || day.day_power">
+              风力：{{ day.day_wind || "-" }} {{ day.day_power || "" }}
+            </div>
           </article>
+          <div v-if="weather.advice?.length" class="weather-advice">
+            <strong>天气建议</strong>
+            <span v-for="item in weather.advice" :key="item">{{ item }}</span>
+          </div>
         </div>
         <div v-else class="state-line">暂无天气信息。</div>
       </section>
@@ -519,12 +909,39 @@ function dayPointCount(day: DayPlan): number {
         <div class="panel-header">
           <div>
             <p class="panel-kicker">Tune</p>
-            <h3 class="panel-title">智能调整</h3>
+            <h3 class="panel-title">多轮调整</h3>
           </div>
-          <WandSparkles :size="22" />
+          <span class="metric-chip">
+            <WandSparkles :size="15" />
+            {{ editRevisionCount }} 轮
+          </span>
         </div>
 
         <div class="edit-controls">
+          <div v-if="editMessages.length" class="edit-thread">
+            <article
+              v-for="(item, index) in editMessages"
+              :key="`${item.role}-${item.created_at || index}`"
+              class="edit-message"
+              :class="`edit-message--${item.role}`"
+            >
+              <div>
+                <strong>{{ editRoleLabel(item.role) }}</strong>
+                <span>{{ formatEditTime(item.created_at) }}</span>
+              </div>
+              <p>{{ item.content }}</p>
+            </article>
+          </div>
+          <div v-if="lastChangeSummary.length" class="edit-summary">
+            <strong>本轮修改</strong>
+            <span v-for="item in lastChangeSummary" :key="item">{{ item }}</span>
+          </div>
+          <div v-if="editIssues.length" class="edit-issues">
+            <strong>仍需留意</strong>
+            <span v-for="issue in editIssues" :key="`${issue.code}-${issue.day_index || 0}`">
+              {{ issue.day_index ? `D${issue.day_index}：` : "" }}{{ issue.message }}
+            </span>
+          </div>
           <label class="field-label">
             <PencilLine :size="15" />
             调整范围
@@ -577,11 +994,9 @@ function dayPointCount(day: DayPlan): number {
 
         <div class="point-grid">
           <article v-for="point in mapPoints" :key="point.key" class="point-card">
-            <div
-              v-if="point.imageUrl"
-              class="point-card__image"
-              :style="{ backgroundImage: `url(${point.imageUrl})` }"
-            ></div>
+            <div v-if="hasUsableImage(point.imageUrl)" class="point-card__image">
+              <img :src="point.imageUrl" :alt="point.name" loading="lazy" @error="markImageFailed(point.imageUrl)" />
+            </div>
             <div v-else class="point-card__image point-card__image--empty">
               <MapPinned :size="24" />
             </div>
@@ -633,8 +1048,10 @@ function dayPointCount(day: DayPlan): number {
               <div v-if="day.transport.length" class="day-section">
                 <h4>交通</h4>
                 <article v-for="item in day.transport" :key="`${item.mode}-${item.from_place}-${item.to_place}`">
-                  <strong>{{ item.mode }} / {{ joinPlaces(item) }}</strong>
-                  <span>{{ item.duration || "时长待定" }} · {{ money(item.estimated_cost) }}</span>
+                  <strong>{{ routeModeText(item) }} / {{ joinPlaces(item) }}</strong>
+                  <span class="route-meta">{{ routeMeta(item) }}</span>
+                  <span v-if="item.route_summary" class="route-summary">{{ item.route_summary }}</span>
+                  <span v-if="item.route_warning" class="route-warning">{{ item.route_warning }}</span>
                 </article>
               </div>
 
@@ -742,6 +1159,7 @@ function dayPointCount(day: DayPlan): number {
 
 .overview-panel,
 .budget-panel,
+.evidence-panel,
 .weather-panel,
 .edit-panel,
 .day-budget-panel,
@@ -757,6 +1175,10 @@ function dayPointCount(day: DayPlan): number {
 
 .budget-panel {
   grid-column: span 5;
+}
+
+.evidence-panel {
+  grid-column: 1 / -1;
 }
 
 .map-panel {
@@ -835,6 +1257,7 @@ function dayPointCount(day: DayPlan): number {
 }
 
 .budget-list,
+.evidence-grid,
 .weather-grid,
 .edit-controls,
 .timeline-list {
@@ -870,6 +1293,166 @@ function dayPointCount(day: DayPlan): number {
   font-size: 18px;
 }
 
+.evidence-meter {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.evidence-meter article {
+  display: grid;
+  gap: 4px;
+  padding: 12px;
+  border-radius: 8px;
+  border: 1px solid rgba(15, 118, 110, 0.16);
+  background: rgba(15, 118, 110, 0.07);
+}
+
+.evidence-meter strong {
+  color: var(--ink);
+  font-size: 24px;
+  font-weight: 950;
+}
+
+.evidence-meter span {
+  color: var(--muted);
+  font-size: 13px;
+  font-weight: 800;
+}
+
+.evidence-summary {
+  display: grid;
+  gap: 6px;
+  padding: 12px;
+  border-radius: 8px;
+  border: 1px solid var(--line);
+  background: var(--surface-2);
+  color: var(--muted-strong);
+  line-height: 1.55;
+}
+
+.evidence-warning {
+  color: #c05621;
+  font-weight: 850;
+}
+
+.evidence-verification {
+  color: var(--accent);
+  font-weight: 850;
+}
+
+.evidence-claims {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: 10px;
+}
+
+.evidence-claim {
+  display: grid;
+  gap: 7px;
+  padding: 12px;
+  border-radius: 8px;
+  border: 1px solid rgba(15, 118, 110, 0.18);
+  background: var(--surface);
+}
+
+.evidence-claim--review {
+  border-color: rgba(192, 86, 33, 0.24);
+  background: rgba(192, 86, 33, 0.07);
+}
+
+.evidence-claim__header {
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+  align-items: center;
+}
+
+.evidence-chip-row {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-start;
+  gap: 6px;
+  align-items: center;
+}
+
+.evidence-chip {
+  display: inline-flex;
+  width: fit-content;
+  min-height: 24px;
+  align-items: center;
+  padding: 3px 8px;
+  border-radius: 8px;
+  border: 1px solid rgba(15, 118, 110, 0.18);
+  background: rgba(15, 118, 110, 0.07);
+  color: var(--accent);
+  font-size: 12px;
+  font-weight: 900;
+}
+
+.evidence-chip--strong {
+  border-color: rgba(15, 118, 110, 0.34);
+  background: rgba(15, 118, 110, 0.14);
+  color: var(--ink);
+}
+
+.evidence-claim strong {
+  color: var(--ink);
+}
+
+.evidence-claim span,
+.evidence-claim small {
+  color: var(--muted);
+  line-height: 1.45;
+}
+
+.evidence-claim p {
+  margin: 0;
+  color: var(--muted-strong);
+  line-height: 1.55;
+}
+
+.evidence-claim a {
+  width: fit-content;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  color: var(--accent);
+  font-weight: 900;
+  text-decoration: none;
+}
+
+.evidence-sources {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 8px;
+}
+
+.evidence-sources a {
+  display: grid;
+  gap: 4px;
+  padding: 10px 12px;
+  border-radius: 8px;
+  border: 1px solid var(--line);
+  background: var(--surface-2);
+  text-decoration: none;
+}
+
+.evidence-sources span {
+  color: var(--ink);
+  font-weight: 900;
+  overflow-wrap: anywhere;
+}
+
+.evidence-sources small {
+  color: var(--muted);
+  line-height: 1.45;
+}
+
+.evidence-source--disabled {
+  pointer-events: none;
+}
+
 .map-panel :deep(.trip-map) {
   margin-top: 16px;
   height: 448px;
@@ -880,6 +1463,25 @@ function dayPointCount(day: DayPlan): number {
   border-radius: 8px;
   background: var(--surface-2);
   border: 1px solid var(--line);
+}
+
+.weather-meta,
+.weather-advice {
+  display: grid;
+  gap: 6px;
+  padding: 10px 12px;
+  border-radius: 8px;
+  background: rgba(15, 118, 110, 0.08);
+  border: 1px solid rgba(15, 118, 110, 0.16);
+  color: var(--accent);
+  font-weight: 900;
+}
+
+.weather-meta span,
+.weather-advice span {
+  color: var(--muted);
+  font-weight: 650;
+  line-height: 1.55;
 }
 
 .weather-card__date {
@@ -902,6 +1504,88 @@ function dayPointCount(day: DayPlan): number {
 .edit-controls .command-button {
   width: 100%;
   margin-top: 2px;
+}
+
+.edit-thread {
+  display: grid;
+  gap: 8px;
+  max-height: 260px;
+  overflow: auto;
+  padding: 10px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--surface-2);
+}
+
+.edit-message {
+  display: grid;
+  gap: 6px;
+  padding: 10px;
+  border-radius: 8px;
+  border: 1px solid var(--line);
+  background: var(--surface);
+}
+
+.edit-message--user {
+  border-color: rgba(15, 118, 110, 0.24);
+  background: rgba(15, 118, 110, 0.07);
+}
+
+.edit-message--assistant {
+  border-color: rgba(192, 86, 33, 0.22);
+  background: rgba(192, 86, 33, 0.07);
+}
+
+.edit-message div {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.edit-message strong {
+  color: var(--ink);
+}
+
+.edit-message span {
+  color: var(--muted);
+  font-size: 12px;
+}
+
+.edit-message p {
+  margin: 0;
+  color: var(--muted-strong);
+  line-height: 1.55;
+  white-space: pre-line;
+}
+
+.edit-summary,
+.edit-issues {
+  display: grid;
+  gap: 6px;
+  padding: 10px 12px;
+  border-radius: 8px;
+}
+
+.edit-summary {
+  border: 1px solid rgba(15, 118, 110, 0.18);
+  background: rgba(15, 118, 110, 0.08);
+}
+
+.edit-issues {
+  border: 1px solid rgba(192, 86, 33, 0.2);
+  background: rgba(192, 86, 33, 0.08);
+}
+
+.edit-summary strong,
+.edit-issues strong {
+  color: var(--ink);
+}
+
+.edit-summary span,
+.edit-issues span {
+  color: var(--muted-strong);
+  line-height: 1.55;
 }
 
 .day-budget-grid {
@@ -969,9 +1653,15 @@ function dayPointCount(day: DayPlan): number {
 
 .point-card__image {
   height: 138px;
-  background-position: center;
-  background-size: cover;
+  overflow: hidden;
   background-color: var(--surface-3);
+}
+
+.point-card__image img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
 }
 
 .point-card__image--empty {
@@ -1090,6 +1780,20 @@ function dayPointCount(day: DayPlan): number {
   line-height: 1.55;
 }
 
+.day-section .route-meta {
+  color: var(--accent);
+  font-weight: 850;
+}
+
+.day-section .route-summary {
+  color: var(--muted-strong);
+}
+
+.day-section .route-warning {
+  color: #c05621;
+  font-weight: 850;
+}
+
 .empty-state {
   min-height: 360px;
   display: grid;
@@ -1114,6 +1818,7 @@ function dayPointCount(day: DayPlan): number {
 @media (max-width: 1180px) {
   .overview-panel,
   .budget-panel,
+  .evidence-panel,
   .map-panel,
   .weather-panel,
   .edit-panel,
@@ -1133,6 +1838,10 @@ function dayPointCount(day: DayPlan): number {
   }
 
   .overview-metrics {
+    grid-template-columns: 1fr;
+  }
+
+  .evidence-meter {
     grid-template-columns: 1fr;
   }
 

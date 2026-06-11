@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"log/slog"
 	"os"
+	"strings"
 	"sync/atomic"
 	"time"
 )
@@ -53,6 +54,22 @@ func Warn(ctx context.Context, msg string, args ...any) {
 func Error(ctx context.Context, msg string, args ...any) {
 	ctx = normalizeContext(ctx)
 	slog.ErrorContext(ctx, msg, withRequestID(ctx, args...)...)
+}
+
+func SafeText(value string, limit int) string {
+	value = strings.TrimSpace(value)
+	if value == "" || limit <= 0 {
+		return value
+	}
+	runes := []rune(value)
+	if len(runes) <= limit {
+		return value
+	}
+	return string(runes[:limit]) + "..."
+}
+
+func Present(value string) bool {
+	return strings.TrimSpace(value) != ""
 }
 
 func normalizeContext(ctx context.Context) context.Context {

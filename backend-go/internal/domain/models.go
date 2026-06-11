@@ -21,11 +21,13 @@ type TripRequest struct {
 
 // TripEditRequest 是“智能编辑行程”的入参。
 type TripEditRequest struct {
-	TripID              string    `json:"trip_id"`
-	CurrentItinerary    Itinerary `json:"current_itinerary"`
-	UserInstruction     string    `json:"user_instruction"`
-	EditScope           string    `json:"edit_scope"`
-	PreserveConstraints []string  `json:"preserve_constraints"`
+	TripID              string            `json:"trip_id"`
+	CurrentItinerary    Itinerary         `json:"current_itinerary"`
+	UserInstruction     string            `json:"user_instruction"`
+	EditScope           string            `json:"edit_scope"`
+	PreserveConstraints []string          `json:"preserve_constraints"`
+	ConversationID      string            `json:"conversation_id,omitempty"`
+	Messages            []TripEditMessage `json:"messages,omitempty"`
 }
 
 // TripSaveRequest 是“保存行程”的入参。
@@ -55,6 +57,7 @@ type MealItem struct {
 	EstimatedCost float64  `json:"estimated_cost"`
 	Notes         string   `json:"notes,omitempty"`
 	Location      string   `json:"location,omitempty"`
+	ImageURL      string   `json:"image_url,omitempty"`
 	Address       string   `json:"address,omitempty"`
 	Latitude      *float64 `json:"latitude,omitempty"`
 	Longitude     *float64 `json:"longitude,omitempty"`
@@ -79,6 +82,61 @@ type TransportItem struct {
 	Duration         string   `json:"duration,omitempty"`
 	DistanceKM       *float64 `json:"distance_km,omitempty"`
 	EstimatedMinutes *int     `json:"estimated_minutes,omitempty"`
+
+	RouteProvider   string  `json:"route_provider,omitempty"` // amap
+	RouteMode       string  `json:"route_mode,omitempty"`     // walking/driving/transit
+	RouteStatus     string  `json:"route_status,omitempty"`
+	DistanceMeters  int     `json:"distance_meters,omitempty"`
+	DurationSeconds int     `json:"duration_seconds,omitempty"`
+	Polyline        string  `json:"polyline,omitempty"`
+	RouteSummary    string  `json:"route_summary,omitempty"`
+	RouteWarning    string  `json:"route_warning,omitempty"`
+	RouteTaxiCost   float64 `json:"route_taxi_cost,omitempty"`
+}
+
+type EvidenceSource struct {
+	ID               string  `json:"id"`
+	Title            string  `json:"title,omitempty"`
+	URL              string  `json:"url,omitempty"`
+	Host             string  `json:"host,omitempty"`
+	SourceType       string  `json:"source_type,omitempty"`
+	VerificationRole string  `json:"verification_role,omitempty"`
+	SourcePriority   int     `json:"source_priority,omitempty"`
+	ReliabilityLabel string  `json:"reliability_label,omitempty"`
+	ReliabilityScore float64 `json:"reliability_score"`
+	PublishedAt      string  `json:"published_at,omitempty"`
+	RetrievedAt      string  `json:"retrieved_at,omitempty"`
+	Snippet          string  `json:"snippet,omitempty"`
+}
+
+type EvidenceClaim struct {
+	ID                   string   `json:"id"`
+	ClaimType            string   `json:"claim_type"`
+	Name                 string   `json:"name,omitempty"`
+	Claim                string   `json:"claim"`
+	Status               string   `json:"status"`
+	Confidence           float64  `json:"confidence"`
+	SourceIDs            []string `json:"source_ids,omitempty"`
+	SourceURLs           []string `json:"source_urls,omitempty"`
+	SourceTypes          []string `json:"source_types,omitempty"`
+	RequiresReview       bool     `json:"requires_review"`
+	RiskLevel            string   `json:"risk_level,omitempty"`
+	Reason               string   `json:"reason,omitempty"`
+	VerificationStatus   string   `json:"verification_status,omitempty"`
+	VerificationChannels []string `json:"verification_channels,omitempty"`
+	VerificationSummary  string   `json:"verification_summary,omitempty"`
+	OfficialSourceURL    string   `json:"official_source_url,omitempty"`
+}
+
+type EvidenceReport struct {
+	Destination         string           `json:"destination,omitempty"`
+	Query               string           `json:"query,omitempty"`
+	GeneratedAt         string           `json:"generated_at,omitempty"`
+	Summary             []string         `json:"summary,omitempty"`
+	VerificationSummary []string         `json:"verification_summary,omitempty"`
+	Sources             []EvidenceSource `json:"sources,omitempty"`
+	Claims              []EvidenceClaim  `json:"claims,omitempty"`
+	Warnings            []string         `json:"warnings,omitempty"`
 }
 
 type BudgetBreakdown struct {
@@ -102,14 +160,42 @@ type DayPlan struct {
 }
 
 type Itinerary struct {
-	TripID          string          `json:"trip_id"`
-	Destination     string          `json:"destination"`
-	Summary         string          `json:"summary"`
-	Days            []DayPlan       `json:"days"`
-	EstimatedBudget float64         `json:"estimated_budget"`
-	BudgetBreakdown BudgetBreakdown `json:"budget_breakdown"`
-	Tips            []string        `json:"tips"`
-	SourceNotes     []string        `json:"source_notes"`
+	TripID             string             `json:"trip_id"`
+	Destination        string             `json:"destination"`
+	Summary            string             `json:"summary"`
+	Days               []DayPlan          `json:"days"`
+	EstimatedBudget    float64            `json:"estimated_budget"`
+	BudgetBreakdown    BudgetBreakdown    `json:"budget_breakdown"`
+	Tips               []string           `json:"tips"`
+	SourceNotes        []string           `json:"source_notes"`
+	Evidence           *EvidenceReport    `json:"evidence,omitempty"`
+	EditConversationID string             `json:"edit_conversation_id,omitempty"`
+	EditMessages       []TripEditMessage  `json:"edit_messages,omitempty"`
+	EditRevisions      []TripEditRevision `json:"edit_revisions,omitempty"`
+	LastChangeSummary  []string           `json:"last_change_summary,omitempty"`
+	EditIssues         []TripEditIssue    `json:"edit_issues,omitempty"`
+}
+
+type TripEditMessage struct {
+	Role      string `json:"role"` // user / assistant / tool
+	Content   string `json:"content"`
+	CreatedAt string `json:"created_at,omitempty"`
+}
+
+type TripEditRevision struct {
+	RevisionID    string   `json:"revision_id"`
+	TripID        string   `json:"trip_id"`
+	Instruction   string   `json:"instruction"`
+	EditScope     string   `json:"edit_scope"`
+	ChangeSummary []string `json:"change_summary"`
+	CreatedAt     string   `json:"created_at"`
+}
+
+type TripEditIssue struct {
+	Code     string `json:"code"`
+	Level    string `json:"level"`
+	Message  string `json:"message"`
+	DayIndex int    `json:"day_index,omitempty"`
 }
 
 type TripDetailResponse struct {
@@ -141,6 +227,8 @@ type WeatherForecastDay struct {
 	NightTemp    string `json:"night_temp,omitempty"`
 	DayWind      string `json:"day_wind,omitempty"`
 	NightWind    string `json:"night_wind,omitempty"`
+	DayPower     string `json:"day_power,omitempty"`
+	NightPower   string `json:"night_power,omitempty"`
 }
 
 type WeatherForecastResponse struct {
@@ -148,5 +236,8 @@ type WeatherForecastResponse struct {
 	Province   string               `json:"province,omitempty"`
 	Adcode     string               `json:"adcode,omitempty"`
 	ReportTime string               `json:"report_time,omitempty"`
+	Source     string               `json:"source,omitempty"`
+	Risks      []string             `json:"risks,omitempty"`
+	Advice     []string             `json:"advice,omitempty"`
 	Days       []WeatherForecastDay `json:"days"`
 }

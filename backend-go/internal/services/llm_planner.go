@@ -1,18 +1,17 @@
 package services
 
 import (
-	"bytes"
 	"context"
 	"encoding/json"
 	"errors"
-	"io"
-	"net/http"
+	"strconv"
 	"strings"
 	"time"
 
-	"zhilv-yuntu-go/internal/config"
-	"zhilv-yuntu-go/internal/domain"
-	"zhilv-yuntu-go/internal/logging"
+	"travel-agent-go/internal/config"
+	"travel-agent-go/internal/domain"
+	"travel-agent-go/internal/llm"
+	"travel-agent-go/internal/logging"
 )
 
 // LLMPlanner 是 Planner 的大模型实现。
@@ -20,15 +19,13 @@ import (
 // 这样你可以看清楚 Go 调 HTTP、定义请求结构、解析 JSON 的完整过程。
 type LLMPlanner struct {
 	cfg    config.Config
-	client *http.Client
+	client llm.ChatClient
 }
 
-func NewLLMPlanner(cfg config.Config) *LLMPlanner {
+func NewLLMPlanner(cfg config.Config, client llm.ChatClient) *LLMPlanner {
 	return &LLMPlanner{
-		cfg: cfg,
-		client: &http.Client{
-			Timeout: time.Duration(cfg.LLMTimeoutSeconds) * time.Second,
-		},
+		cfg:    cfg,
+		client: client,
 	}
 }
 
@@ -49,7 +46,10 @@ func (p *LLMPlanner) GenerateDraft(request domain.TripRequest, contexts []string
 	)
 
 	prompt := "你是一名旅行规划助手。请只输出 JSON，不要 Markdown。\n" +
-		"字段：summary, tips, days。days 每项字段：day_index, theme, spot_name, spot_description, meal_name, meal_notes, daily_note。\n" +
+		"字段：summary, tips, days。tips 必须是字符串数组。days 必须恰好包含 " + itoa(dayCount) + " 项。\n" +
+		"days 每项字段：day_index, theme, spot_name, spot_description, meal_name, meal_notes, daily_note。\n" +
+		"spot_name 和 meal_name 必须是真实地点或餐饮名称，不要使用“推荐景点 1”“特色餐饮 1”等占位词。\n" +
+		"优先使用上下文中的在线证据、候选景点、官方/地图/票务来源和本地攻略信息。\n" +
 		"目的地：" + request.Destination + "\n" +
 		"日期：" + request.StartDate + " 至 " + request.EndDate + "\n" +
 		"天数：" + itoa(dayCount) + "\n" +
@@ -71,30 +71,27 @@ func (p *LLMPlanner) GenerateDraft(request domain.TripRequest, contexts []string
 		return PlannerDraft{}, false, err
 	}
 
-	var payload struct {
-		Summary string   `json:"summary"`
-		Tips    []string `json:"tips"`
-		Days    []struct {
-			DayIndex        int    `json:"day_index"`
-			Theme           string `json:"theme"`
-			SpotName        string `json:"spot_name"`
-			SpotDescription string `json:"spot_description"`
-			MealName        string `json:"meal_name"`
-			MealNotes       string `json:"meal_notes"`
-			DailyNote       string `json:"daily_note"`
-		} `json:"days"`
-	}
+	var payload plannerJSONPayload
 	if err := json.Unmarshal([]byte(extractJSONObject(raw)), &payload); err != nil {
+		logging.Warn(ctx, "llm planner generate draft parse failed",
+			"destination", request.Destination,
+			"duration_ms", time.Since(start).Milliseconds(),
+			"raw_chars", len([]rune(raw)),
+			"error", err,
+		)
 		return PlannerDraft{}, false, err
 	}
-	if len(payload.Days) != dayCount {
+	if len(payload.Days) < dayCount {
 		return PlannerDraft{}, false, errors.New("LLM 返回天数不匹配")
+	}
+	if len(payload.Days) > dayCount {
+		payload.Days = payload.Days[:dayCount]
 	}
 
 	days := make([]PlannerDayDraft, 0, len(payload.Days))
 	for _, item := range payload.Days {
 		days = append(days, PlannerDayDraft{
-			DayIndex:        item.DayIndex,
+			DayIndex:        int(item.DayIndex),
 			Theme:           item.Theme,
 			SpotName:        item.SpotName,
 			SpotDescription: item.SpotDescription,
@@ -130,11 +127,16 @@ func (p *LLMPlanner) EditDay(request domain.TripEditRequest, targetDay domain.Da
 	)
 
 	currentDay, _ := json.Marshal(targetDay)
+	history, _ := json.Marshal(firstNEditMessages(request.Messages, 8))
+	constraints, _ := json.Marshal(request.PreserveConstraints)
 	prompt := "你是一名旅行行程编辑助手。请只输出 JSON，不要 Markdown。\n" +
-		"字段：theme, spot_name, spot_description, meal_name, meal_notes, daily_note。\n" +
+		"字段：theme, spot_name, spot_description, meal_name, meal_notes, daily_note, change_summary。\n" +
+		"change_summary 是字符串数组，用 1 到 4 条中文短句说明本轮具体修改了什么。\n" +
 		"当前目标日：" + string(currentDay) + "\n" +
 		"用户编辑指令：" + request.UserInstruction + "\n" +
-		"编辑范围：" + request.EditScope
+		"编辑范围：" + request.EditScope + "\n" +
+		"必须保留的约束：" + string(constraints) + "\n" +
+		"最近编辑对话历史：" + string(history)
 
 	raw, err := p.chat(prompt)
 	if err != nil {
@@ -167,81 +169,35 @@ func (p *LLMPlanner) EditDay(request domain.TripEditRequest, targetDay domain.Da
 func (p *LLMPlanner) chat(prompt string) (string, error) {
 	ctx := context.Background()
 	start := time.Now()
-	baseURL := strings.TrimRight(p.cfg.LLMBaseURL, "/")
-	if baseURL == "" {
-		baseURL = "https://dashscope.aliyuncs.com/compatible-mode/v1"
+	if p.client == nil {
+		return "", errors.New("llm chat client is not configured")
 	}
-
-	body := map[string]any{
-		"model": p.cfg.LLMModel,
-		"messages": []map[string]string{
-			{"role": "system", "content": "你必须只输出一个 JSON 对象。"},
-			{"role": "user", "content": prompt},
-		},
-		"temperature": 0.3,
-	}
-	data, err := json.Marshal(body)
-	if err != nil {
-		return "", err
-	}
-
-	req, err := http.NewRequest(http.MethodPost, baseURL+"/chat/completions", bytes.NewReader(data))
-	if err != nil {
-		return "", err
-	}
-	req.Header.Set("Authorization", "Bearer "+p.cfg.LLMAPIKey)
-	req.Header.Set("Content-Type", "application/json")
 
 	logging.Info(ctx, "llm planner chat request started",
 		"model", p.cfg.LLMModel,
-		"url", baseURL+"/chat/completions",
 		"prompt_chars", len([]rune(prompt)),
 	)
-	resp, err := p.client.Do(req)
+	message, err := p.client.Chat(ctx, llm.ChatRequest{
+		Model: p.cfg.LLMModel,
+		Messages: []llm.ChatMessage{
+			{Role: "system", Content: "You are a strict JSON API. Return only one valid JSON object matching the requested schema."},
+			{Role: "user", Content: prompt},
+		},
+		Temperature: 0.3,
+	})
 	if err != nil {
-		logging.Warn(ctx, "llm planner chat request failed",
+		logging.Warn(ctx, "llm planner chat failed",
 			"model", p.cfg.LLMModel,
 			"duration_ms", time.Since(start).Milliseconds(),
 			"error", err,
 		)
 		return "", err
 	}
-	defer resp.Body.Close()
-
-	respBody, err := io.ReadAll(resp.Body)
-	if err != nil {
-		return "", err
-	}
-	if resp.StatusCode < 200 || resp.StatusCode >= 300 {
-		logging.Warn(ctx, "llm planner chat response failed",
-			"model", p.cfg.LLMModel,
-			"status", resp.StatusCode,
-			"duration_ms", time.Since(start).Milliseconds(),
-			"error", string(respBody),
-		)
-		return "", errors.New(string(respBody))
-	}
-
-	var parsed struct {
-		Choices []struct {
-			Message struct {
-				Content string `json:"content"`
-			} `json:"message"`
-		} `json:"choices"`
-	}
-	if err := json.Unmarshal(respBody, &parsed); err != nil {
-		return "", err
-	}
-	if len(parsed.Choices) == 0 {
-		return "", errors.New("LLM 响应没有 choices")
-	}
 	logging.Info(ctx, "llm planner chat request completed",
 		"model", p.cfg.LLMModel,
-		"status", resp.StatusCode,
-		"choices", len(parsed.Choices),
 		"duration_ms", time.Since(start).Milliseconds(),
 	)
-	return parsed.Choices[0].Message.Content, nil
+	return message.Content, nil
 }
 
 func extractJSONObject(text string) string {
@@ -255,4 +211,64 @@ func extractJSONObject(text string) string {
 		return text
 	}
 	return text[start : end+1]
+}
+
+type plannerJSONPayload struct {
+	Summary string             `json:"summary"`
+	Tips    flexibleStringList `json:"tips"`
+	Days    []plannerJSONDay   `json:"days"`
+}
+
+type plannerJSONDay struct {
+	DayIndex        flexibleInt `json:"day_index"`
+	Theme           string      `json:"theme"`
+	SpotName        string      `json:"spot_name"`
+	SpotDescription string      `json:"spot_description"`
+	MealName        string      `json:"meal_name"`
+	MealNotes       string      `json:"meal_notes"`
+	DailyNote       string      `json:"daily_note"`
+}
+
+type flexibleStringList []string
+
+func (l *flexibleStringList) UnmarshalJSON(data []byte) error {
+	if string(data) == "null" {
+		*l = nil
+		return nil
+	}
+	var list []string
+	if err := json.Unmarshal(data, &list); err == nil {
+		*l = cleanStringList(list)
+		return nil
+	}
+	var single string
+	if err := json.Unmarshal(data, &single); err == nil {
+		if strings.TrimSpace(single) == "" {
+			*l = nil
+			return nil
+		}
+		*l = []string{strings.TrimSpace(single)}
+		return nil
+	}
+	return errors.New("expected string or string array")
+}
+
+type flexibleInt int
+
+func (i *flexibleInt) UnmarshalJSON(data []byte) error {
+	var number int
+	if err := json.Unmarshal(data, &number); err == nil {
+		*i = flexibleInt(number)
+		return nil
+	}
+	var text string
+	if err := json.Unmarshal(data, &text); err != nil {
+		return err
+	}
+	parsed, err := strconv.Atoi(strings.TrimSpace(text))
+	if err != nil {
+		return err
+	}
+	*i = flexibleInt(parsed)
+	return nil
 }

@@ -3,7 +3,7 @@ package tools
 import (
 	"context"
 
-	"zhilv-yuntu-go/internal/services"
+	"travel-agent-go/internal/services"
 )
 
 type WebResearchTool struct {

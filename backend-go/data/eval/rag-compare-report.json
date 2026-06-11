@@ -1,0 +1,1226 @@
+{
+  "cases": 10,
+  "baseline": "simple_markdown",
+  "profiles": [
+    {
+      "name": "simple_markdown",
+      "description": "旧版/简单 RAG：只使用本地 Markdown 词法检索",
+      "backend": "markdown",
+      "reranker_enabled": false,
+      "reranked_cases": 0,
+      "candidate_k": 40,
+      "rrf_k": 60,
+      "query_variants": 3,
+      "cases": 10,
+      "failed_cases": 0,
+      "hit_rate": 1,
+      "average_recall": 1,
+      "average_mrr": 1,
+      "average_ndcg": 1,
+      "forbidden_hits": 0,
+      "average_latency_ms": 13.3,
+      "quality_score": 0.9999999999999999,
+      "quality_score_delta": 0,
+      "average_latency_delta_ms": 0,
+      "average_recall_delta": 0,
+      "average_mrr_delta": 0,
+      "average_ndcg_delta": 0,
+      "forbidden_hits_delta": 0,
+      "case_reports": [
+        {
+          "id": "xiamen_sunset_food",
+          "hit": true,
+          "recall": 1,
+          "mrr": 1,
+          "ndcg": 1,
+          "forbidden_hits": 0,
+          "latency_ms": 14,
+          "result_ids": [
+            "f91c23f0aefb6f764eb7c3ae25ce5c2d769dffdd",
+            "8c52f7686e4c7e6e655604f2bc88e3f2cb91d98e",
+            "b8db19e3217768518bf085a0f8c0399e8e355cc6",
+            "f0aba0ba3ec487bf587f38bb7c4147865565e39e",
+            "ed8b30e4e1857574cf27fbe4506af0712272ee93"
+          ],
+          "result_sources": [
+            "xiamen_guide.md",
+            "xiamen_guide.md",
+            "xiamen_guide.md",
+            "xiamen_guide.md",
+            "xiamen_guide.md"
+          ],
+          "channels": [
+            "lexical"
+          ],
+          "reranked": false
+        },
+        {
+          "id": "dali_old_town_lake",
+          "hit": true,
+          "recall": 1,
+          "mrr": 1,
+          "ndcg": 1,
+          "forbidden_hits": 0,
+          "latency_ms": 13,
+          "result_ids": [
+            "1d28d44318158a5da9543d6deef824d3d16bff41",
+            "d7dc21b606fd59724990f924928cec508dc3ee57",
+            "ea6dfe9c2b4723ce89fc3446d464a71420a00c84",
+            "77c190cd4c6df0b231265d3054561f3b676e8883",
+            "f850abaa234c678926534b6c82e8507c2f38f560"
+          ],
+          "result_sources": [
+            "dali_guide.md",
+            "dali_guide.md",
+            "dali_guide.md",
+            "dali_guide.md",
+            "dali_guide.md"
+          ],
+          "channels": [
+            "lexical"
+          ],
+          "reranked": false
+        },
+        {
+          "id": "chengdu_food_panda",
+          "hit": true,
+          "recall": 1,
+          "mrr": 1,
+          "ndcg": 1,
+          "forbidden_hits": 0,
+          "latency_ms": 13,
+          "result_ids": [
+            "447e83ecef0378dc864142f84a5a3fd991f4d1ca",
+            "b6ddfcec6e08773be30c98b3fa69755a105e821f",
+            "b66ba663c1f5919f3c96f371861094b1f31a17ff",
+            "0756f3d199a719500f5fc11c82da933a29b84ecc",
+            "cb60d901a2df2f8c7412057b25488b2e4525b417"
+          ],
+          "result_sources": [
+            "chengdu_guide.md",
+            "chengdu_guide.md",
+            "chengdu_guide.md",
+            "chengdu_guide.md",
+            "chengdu_guide.md"
+          ],
+          "channels": [
+            "lexical"
+          ],
+          "reranked": false
+        },
+        {
+          "id": "sanya_family_beach",
+          "hit": true,
+          "recall": 1,
+          "mrr": 1,
+          "ndcg": 1,
+          "forbidden_hits": 0,
+          "latency_ms": 13,
+          "result_ids": [
+            "e28826ace2ce70711def8ba60a78fc22a1f3f79e",
+            "3974f348db9f5e089bfa23d9a14ab675c7e430c1",
+            "c99828fb3bf79f57be86dfd26a737ba0c1591c89",
+            "0cdc4aefb32080c8512beff8d12e8b51225d8863",
+            "1abcc3541179018f53cdf36f84ee3393246f9b8a"
+          ],
+          "result_sources": [
+            "sanya_guide.md",
+            "sanya_guide.md",
+            "sanya_guide.md",
+            "sanya_guide.md",
+            "sanya_guide.md"
+          ],
+          "channels": [
+            "lexical"
+          ],
+          "reranked": false
+        },
+        {
+          "id": "xian_history_food",
+          "hit": true,
+          "recall": 1,
+          "mrr": 1,
+          "ndcg": 1,
+          "forbidden_hits": 0,
+          "latency_ms": 13,
+          "result_ids": [
+            "053d93377ff9947f9502ecb3be4a350a9dfaaec7",
+            "66b7f6613bd55301fd4bfa10e6fbabb9360ed0e5",
+            "71d1dfc0ae451daa1ca59d344e769c5cbbac2d38",
+            "740e1f73adfecef27994a8a7daaf148c6a3897a5",
+            "65d02b67fbdb619967b587d9a6f593821f3ed39f"
+          ],
+          "result_sources": [
+            "xian_guide.md",
+            "xian_guide.md",
+            "xian_guide.md",
+            "xian_guide.md",
+            "xian_guide.md"
+          ],
+          "channels": [
+            "lexical"
+          ],
+          "reranked": false
+        },
+        {
+          "id": "beijing_first_time_history",
+          "hit": true,
+          "recall": 1,
+          "mrr": 1,
+          "ndcg": 1,
+          "forbidden_hits": 0,
+          "latency_ms": 12,
+          "result_ids": [
+            "312fce17250699de85f3a6a3f08ba05e4676fdfe",
+            "5a0e223f34e98308ef620b451817e281b5fb0e97",
+            "0127402ea83362210ff729e7215efa8553273966",
+            "a4ffd85985036bcdd14d16e225f4e9199c17c2d5",
+            "617e5be11002e5fb7010cb5c52b1cf280329f122"
+          ],
+          "result_sources": [
+            "beijing_guide.md",
+            "beijing_guide.md",
+            "beijing_guide.md",
+            "beijing_guide.md",
+            "beijing_guide.md"
+          ],
+          "channels": [
+            "lexical"
+          ],
+          "reranked": false
+        },
+        {
+          "id": "shanghai_citywalk_night",
+          "hit": true,
+          "recall": 1,
+          "mrr": 1,
+          "ndcg": 1,
+          "forbidden_hits": 0,
+          "latency_ms": 16,
+          "result_ids": [
+            "2af5f7d11da608c71c9aa8776d36ce4f73485f80",
+            "b3ba55b66249966e7e53faad606c69066ea226b0",
+            "e9a3133027be22d8d19342d17674639dd9e77572",
+            "5ce4302c6e3bd4e6cab865745a6b2bb2a70f0134",
+            "c13570b79a3e02c7b67487c69c920ae72e8f4776"
+          ],
+          "result_sources": [
+            "shanghai_guide.md",
+            "shanghai_guide.md",
+            "shanghai_guide.md",
+            "shanghai_guide.md",
+            "shanghai_guide.md"
+          ],
+          "channels": [
+            "lexical"
+          ],
+          "reranked": false
+        },
+        {
+          "id": "hangzhou_westlake_tea",
+          "hit": true,
+          "recall": 1,
+          "mrr": 1,
+          "ndcg": 1,
+          "forbidden_hits": 0,
+          "latency_ms": 13,
+          "result_ids": [
+            "1b837edce24ab083aa693c96e82ab52c2d0f8c80",
+            "93feda13d8fb4b752cd5855c84e71e736bd0010b",
+            "f17b01251c0ce4bb9ba015c509e68138aeeec162",
+            "1f7897b8781a940f9aa61c381e6d85ef8ade51e7",
+            "6bf9895ab9e69f1862696575b5fee0e28d2350c0"
+          ],
+          "result_sources": [
+            "hangzhou_guide.md",
+            "hangzhou_guide.md",
+            "hangzhou_guide.md",
+            "hangzhou_guide.md",
+            "hangzhou_guide.md"
+          ],
+          "channels": [
+            "lexical"
+          ],
+          "reranked": false
+        },
+        {
+          "id": "chongqing_food_night",
+          "hit": true,
+          "recall": 1,
+          "mrr": 1,
+          "ndcg": 1,
+          "forbidden_hits": 0,
+          "latency_ms": 13,
+          "result_ids": [
+            "4cd8bb4f016e98b398eb7b8deaa442c54f10cc42",
+            "0aa1974c0d0b3af2700409ecc614bfd41502e4ce",
+            "91e1fe0f4250de11414ee2e675c115f0dffed0ce",
+            "0dacffbe7b6acef596b04515d2ec5b589b348c92",
+            "bac78e398cc20c7d8844b3afacc5a0902eccc204"
+          ],
+          "result_sources": [
+            "chongqing_guide.md",
+            "chongqing_guide.md",
+            "chongqing_guide.md",
+            "chongqing_guide.md",
+            "chongqing_guide.md"
+          ],
+          "channels": [
+            "lexical"
+          ],
+          "reranked": false
+        },
+        {
+          "id": "guilin_landscape_yangshuo",
+          "hit": true,
+          "recall": 1,
+          "mrr": 1,
+          "ndcg": 1,
+          "forbidden_hits": 0,
+          "latency_ms": 13,
+          "result_ids": [
+            "da8c3111e3b90b9058518eef7cc5d3f8ac95396e",
+            "0f8840ea369d2e0f7295fa1e1517948e8bafe868",
+            "24a32a15d052027b40ebf67e71b533bc9336be56",
+            "b212696c32fd11e8a8a48dabcd144354cba389c6",
+            "c16787d54b6d730b0fdfa40f74719d32711dafae"
+          ],
+          "result_sources": [
+            "guilin_guide.md",
+            "guilin_guide.md",
+            "guilin_guide.md",
+            "guilin_guide.md",
+            "guilin_guide.md"
+          ],
+          "channels": [
+            "lexical"
+          ],
+          "reranked": false
+        }
+      ]
+    },
+    {
+      "name": "qdrant_bge_m3",
+      "description": "纯 dense 向量召回，embedding=bge-m3",
+      "backend": "qdrant",
+      "qdrant_collection": "travel_guides",
+      "embedding_model": "bge-m3",
+      "embedding_dim": 1024,
+      "reranker_enabled": false,
+      "reranked_cases": 0,
+      "candidate_k": 40,
+      "rrf_k": 60,
+      "query_variants": 3,
+      "cases": 10,
+      "failed_cases": 0,
+      "hit_rate": 0.6,
+      "average_recall": 0.4999999999999999,
+      "average_mrr": 0.4,
+      "average_ndcg": 0.4732701530156625,
+      "forbidden_hits": 34,
+      "average_latency_ms": 1809.7,
+      "quality_score": 0,
+      "quality_score_delta": -0.9999999999999999,
+      "average_latency_delta_ms": 1796.4,
+      "average_recall_delta": -0.5000000000000001,
+      "average_mrr_delta": -0.6,
+      "average_ndcg_delta": -0.5267298469843376,
+      "forbidden_hits_delta": 34,
+      "case_reports": [
+        {
+          "id": "xiamen_sunset_food",
+          "hit": true,
+          "recall": 0.6666666666666666,
+          "mrr": 0.3333333333333333,
+          "ndcg": 0.5437713091520254,
+          "forbidden_hits": 4,
+          "latency_ms": 12488,
+          "result_ids": [
+            "caa0b3de-8caf-51de-b558-b0dd19946163",
+            "cf03eb24-6329-5342-89b8-3cfee3344299",
+            "14e67401-1788-5d40-9ab9-54957ce02ba6",
+            "161465c2-b5b3-5a0e-8ab6-ec9562750283",
+            "b7d66a36-aa2b-5166-9ad6-9c25cd81cb37"
+          ],
+          "result_sources": [
+            "sanya_guide.md",
+            "xian_guide.md",
+            "sanya_guide.md",
+            "sanya_guide.md",
+            "xiamen_guide.md"
+          ],
+          "channels": [
+            "dense"
+          ],
+          "reranked": false
+        },
+        {
+          "id": "dali_old_town_lake",
+          "hit": true,
+          "recall": 1,
+          "mrr": 1,
+          "ndcg": 1,
+          "forbidden_hits": 0,
+          "latency_ms": 643,
+          "result_ids": [
+            "7d44926c-5ecc-534f-b15f-add33a8dcd85",
+            "5815da25-a530-52b8-b9ef-d53d9f6fd0eb",
+            "5c707018-19ce-5c0e-b0c8-48edf02434a3",
+            "f2330fe2-cbba-543e-9598-b06de8373749",
+            "449fe07c-082a-5dee-bb34-8d404a047842"
+          ],
+          "result_sources": [
+            "dali_guide.md",
+            "dali_guide.md",
+            "dali_guide.md",
+            "dali_guide.md",
+            "dali_guide.md"
+          ],
+          "channels": [
+            "dense"
+          ],
+          "reranked": false
+        },
+        {
+          "id": "chengdu_food_panda",
+          "hit": true,
+          "recall": 1,
+          "mrr": 0.3333333333333333,
+          "ndcg": 0.6182885020492787,
+          "forbidden_hits": 3,
+          "latency_ms": 651,
+          "result_ids": [
+            "cf03eb24-6329-5342-89b8-3cfee3344299",
+            "e56e396a-018c-5f14-b6af-549a51f899ba",
+            "f36e9ef3-7097-532f-adbe-80dc75e34862",
+            "e084bdd9-0f6f-5265-8c19-ae74024aa609",
+            "437fe619-defb-5ded-b31c-5675c2207cd5"
+          ],
+          "result_sources": [
+            "xian_guide.md",
+            "xian_guide.md",
+            "dali_guide.md",
+            "chengdu_guide.md",
+            "chengdu_guide.md"
+          ],
+          "channels": [
+            "dense"
+          ],
+          "reranked": false
+        },
+        {
+          "id": "sanya_family_beach",
+          "hit": true,
+          "recall": 1,
+          "mrr": 1,
+          "ndcg": 1,
+          "forbidden_hits": 1,
+          "latency_ms": 723,
+          "result_ids": [
+            "b7037a68-d752-57c2-a722-72de5fdb203d",
+            "979e98cb-8c45-5c24-b8a9-58a014ee7a5f",
+            "161465c2-b5b3-5a0e-8ab6-ec9562750283",
+            "e4b3ba0e-0c33-58e9-9927-1205cc568963",
+            "289725ba-4ad9-5d39-bf82-c870e33f16cb"
+          ],
+          "result_sources": [
+            "sanya_guide.md",
+            "sanya_guide.md",
+            "sanya_guide.md",
+            "sanya_guide.md",
+            "xiamen_guide.md"
+          ],
+          "channels": [
+            "dense"
+          ],
+          "reranked": false
+        },
+        {
+          "id": "xian_history_food",
+          "hit": true,
+          "recall": 1,
+          "mrr": 1,
+          "ndcg": 1,
+          "forbidden_hits": 1,
+          "latency_ms": 617,
+          "result_ids": [
+            "0c5af98b-794e-506b-9392-b60a448bcb81",
+            "b5e7eb95-ac2e-527c-b740-889d09211e03",
+            "af74863d-de0e-55cd-9bbc-a9f0a14ed3ac",
+            "a6d436d9-1583-5118-953b-8999d249af75",
+            "437fe619-defb-5ded-b31c-5675c2207cd5"
+          ],
+          "result_sources": [
+            "xian_guide.md",
+            "xian_guide.md",
+            "xian_guide.md",
+            "xian_guide.md",
+            "chengdu_guide.md"
+          ],
+          "channels": [
+            "dense"
+          ],
+          "reranked": false
+        },
+        {
+          "id": "beijing_first_time_history",
+          "hit": false,
+          "recall": 0,
+          "mrr": 0,
+          "ndcg": 0,
+          "forbidden_hits": 5,
+          "latency_ms": 624,
+          "result_ids": [
+            "b5e7eb95-ac2e-527c-b740-889d09211e03",
+            "e084bdd9-0f6f-5265-8c19-ae74024aa609",
+            "af74863d-de0e-55cd-9bbc-a9f0a14ed3ac",
+            "dc2daf10-2cf8-5c6c-adb5-9235c0f6c2c5",
+            "437fe619-defb-5ded-b31c-5675c2207cd5"
+          ],
+          "result_sources": [
+            "xian_guide.md",
+            "chengdu_guide.md",
+            "xian_guide.md",
+            "chengdu_guide.md",
+            "chengdu_guide.md"
+          ],
+          "channels": [
+            "dense"
+          ],
+          "reranked": false
+        },
+        {
+          "id": "shanghai_citywalk_night",
+          "hit": false,
+          "recall": 0,
+          "mrr": 0,
+          "ndcg": 0,
+          "forbidden_hits": 5,
+          "latency_ms": 615,
+          "result_ids": [
+            "2fcc94af-3c32-56da-912a-60848d112e6a",
+            "7c7d130b-2495-52d1-a577-e96257d2ca9d",
+            "af74863d-de0e-55cd-9bbc-a9f0a14ed3ac",
+            "437fe619-defb-5ded-b31c-5675c2207cd5",
+            "0c5af98b-794e-506b-9392-b60a448bcb81"
+          ],
+          "result_sources": [
+            "xian_guide.md",
+            "xian_guide.md",
+            "xian_guide.md",
+            "chengdu_guide.md",
+            "xian_guide.md"
+          ],
+          "channels": [
+            "dense"
+          ],
+          "reranked": false
+        },
+        {
+          "id": "hangzhou_westlake_tea",
+          "hit": false,
+          "recall": 0,
+          "mrr": 0,
+          "ndcg": 0,
+          "forbidden_hits": 5,
+          "latency_ms": 542,
+          "result_ids": [
+            "979e98cb-8c45-5c24-b8a9-58a014ee7a5f",
+            "db2f59e4-3290-5472-8175-a4c268ea5399",
+            "437fe619-defb-5ded-b31c-5675c2207cd5",
+            "0876abf7-6262-5506-8c38-3b9fbb78b832",
+            "5e05b7d8-b125-5882-9783-7ed0f8e94760"
+          ],
+          "result_sources": [
+            "sanya_guide.md",
+            "sanya_guide.md",
+            "chengdu_guide.md",
+            "xiamen_guide.md",
+            "chengdu_guide.md"
+          ],
+          "channels": [
+            "dense"
+          ],
+          "reranked": false
+        },
+        {
+          "id": "chongqing_food_night",
+          "hit": true,
+          "recall": 0.3333333333333333,
+          "mrr": 0.3333333333333333,
+          "ndcg": 0.5706417189553201,
+          "forbidden_hits": 5,
+          "latency_ms": 604,
+          "result_ids": [
+            "2fcc94af-3c32-56da-912a-60848d112e6a",
+            "0c5af98b-794e-506b-9392-b60a448bcb81",
+            "437fe619-defb-5ded-b31c-5675c2207cd5",
+            "5815da25-a530-52b8-b9ef-d53d9f6fd0eb",
+            "0876abf7-6262-5506-8c38-3b9fbb78b832"
+          ],
+          "result_sources": [
+            "xian_guide.md",
+            "xian_guide.md",
+            "chengdu_guide.md",
+            "dali_guide.md",
+            "xiamen_guide.md"
+          ],
+          "channels": [
+            "dense"
+          ],
+          "reranked": false
+        },
+        {
+          "id": "guilin_landscape_yangshuo",
+          "hit": false,
+          "recall": 0,
+          "mrr": 0,
+          "ndcg": 0,
+          "forbidden_hits": 5,
+          "latency_ms": 590,
+          "result_ids": [
+            "f2330fe2-cbba-543e-9598-b06de8373749",
+            "e084bdd9-0f6f-5265-8c19-ae74024aa609",
+            "3f831dc5-34ca-5f5a-a227-6836f857ba7b",
+            "2f1c1bb0-6c02-5d4f-a49a-d49ca449ce77",
+            "094d5a23-6f9b-5658-95bf-582c75ef859c"
+          ],
+          "result_sources": [
+            "dali_guide.md",
+            "chengdu_guide.md",
+            "chengdu_guide.md",
+            "dali_guide.md",
+            "dali_guide.md"
+          ],
+          "channels": [
+            "dense"
+          ],
+          "reranked": false
+        }
+      ]
+    },
+    {
+      "name": "hybrid_bge_m3_rrf",
+      "description": "高级 RAG：dense + lexical + RRF，不启用重排",
+      "backend": "hybrid",
+      "qdrant_collection": "travel_guides",
+      "embedding_model": "bge-m3",
+      "embedding_dim": 1024,
+      "reranker_enabled": false,
+      "reranked_cases": 0,
+      "candidate_k": 40,
+      "rrf_k": 60,
+      "query_variants": 3,
+      "cases": 10,
+      "failed_cases": 0,
+      "hit_rate": 1,
+      "average_recall": 1,
+      "average_mrr": 0.95,
+      "average_ndcg": 0.902909877743984,
+      "forbidden_hits": 18,
+      "average_latency_ms": 645.6,
+      "quality_score": 0.6008729633231953,
+      "quality_score_delta": -0.3991270366768046,
+      "average_latency_delta_ms": 632.3000000000001,
+      "average_recall_delta": 0,
+      "average_mrr_delta": -0.050000000000000044,
+      "average_ndcg_delta": -0.09709012225601599,
+      "forbidden_hits_delta": 18,
+      "case_reports": [
+        {
+          "id": "xiamen_sunset_food",
+          "hit": true,
+          "recall": 1,
+          "mrr": 0.5,
+          "ndcg": 0.7122630665145961,
+          "forbidden_hits": 2,
+          "latency_ms": 681,
+          "result_ids": [
+            "caa0b3de-8caf-51de-b558-b0dd19946163",
+            "f91c23f0aefb6f764eb7c3ae25ce5c2d769dffdd",
+            "8c52f7686e4c7e6e655604f2bc88e3f2cb91d98e",
+            "cf03eb24-6329-5342-89b8-3cfee3344299",
+            "b8db19e3217768518bf085a0f8c0399e8e355cc6"
+          ],
+          "result_sources": [
+            "sanya_guide.md",
+            "xiamen_guide.md",
+            "xiamen_guide.md",
+            "xian_guide.md",
+            "xiamen_guide.md"
+          ],
+          "channels": [
+            "dense",
+            "lexical"
+          ],
+          "reranked": false
+        },
+        {
+          "id": "dali_old_town_lake",
+          "hit": true,
+          "recall": 1,
+          "mrr": 1,
+          "ndcg": 1,
+          "forbidden_hits": 0,
+          "latency_ms": 667,
+          "result_ids": [
+            "1d28d44318158a5da9543d6deef824d3d16bff41",
+            "7d44926c-5ecc-534f-b15f-add33a8dcd85",
+            "449fe07c-082a-5dee-bb34-8d404a047842",
+            "d7dc21b606fd59724990f924928cec508dc3ee57",
+            "5815da25-a530-52b8-b9ef-d53d9f6fd0eb"
+          ],
+          "result_sources": [
+            "dali_guide.md",
+            "dali_guide.md",
+            "dali_guide.md",
+            "dali_guide.md",
+            "dali_guide.md"
+          ],
+          "channels": [
+            "lexical",
+            "dense"
+          ],
+          "reranked": false
+        },
+        {
+          "id": "chengdu_food_panda",
+          "hit": true,
+          "recall": 1,
+          "mrr": 1,
+          "ndcg": 0.8854598815714875,
+          "forbidden_hits": 2,
+          "latency_ms": 690,
+          "result_ids": [
+            "447e83ecef0378dc864142f84a5a3fd991f4d1ca",
+            "cf03eb24-6329-5342-89b8-3cfee3344299",
+            "b6ddfcec6e08773be30c98b3fa69755a105e821f",
+            "e56e396a-018c-5f14-b6af-549a51f899ba",
+            "b66ba663c1f5919f3c96f371861094b1f31a17ff"
+          ],
+          "result_sources": [
+            "chengdu_guide.md",
+            "xian_guide.md",
+            "chengdu_guide.md",
+            "xian_guide.md",
+            "chengdu_guide.md"
+          ],
+          "channels": [
+            "lexical",
+            "dense"
+          ],
+          "reranked": false
+        },
+        {
+          "id": "sanya_family_beach",
+          "hit": true,
+          "recall": 1,
+          "mrr": 1,
+          "ndcg": 1,
+          "forbidden_hits": 0,
+          "latency_ms": 636,
+          "result_ids": [
+            "b7037a68-d752-57c2-a722-72de5fdb203d",
+            "e28826ace2ce70711def8ba60a78fc22a1f3f79e",
+            "3974f348db9f5e089bfa23d9a14ab675c7e430c1",
+            "979e98cb-8c45-5c24-b8a9-58a014ee7a5f",
+            "c99828fb3bf79f57be86dfd26a737ba0c1591c89"
+          ],
+          "result_sources": [
+            "sanya_guide.md",
+            "sanya_guide.md",
+            "sanya_guide.md",
+            "sanya_guide.md",
+            "sanya_guide.md"
+          ],
+          "channels": [
+            "dense",
+            "lexical"
+          ],
+          "reranked": false
+        },
+        {
+          "id": "xian_history_food",
+          "hit": true,
+          "recall": 1,
+          "mrr": 1,
+          "ndcg": 1,
+          "forbidden_hits": 1,
+          "latency_ms": 634,
+          "result_ids": [
+            "053d93377ff9947f9502ecb3be4a350a9dfaaec7",
+            "0c5af98b-794e-506b-9392-b60a448bcb81",
+            "66b7f6613bd55301fd4bfa10e6fbabb9360ed0e5",
+            "b5e7eb95-ac2e-527c-b740-889d09211e03",
+            "437fe619-defb-5ded-b31c-5675c2207cd5"
+          ],
+          "result_sources": [
+            "xian_guide.md",
+            "xian_guide.md",
+            "xian_guide.md",
+            "xian_guide.md",
+            "chengdu_guide.md"
+          ],
+          "channels": [
+            "lexical",
+            "dense"
+          ],
+          "reranked": false
+        },
+        {
+          "id": "beijing_first_time_history",
+          "hit": true,
+          "recall": 1,
+          "mrr": 1,
+          "ndcg": 0.8854598815714875,
+          "forbidden_hits": 2,
+          "latency_ms": 544,
+          "result_ids": [
+            "312fce17250699de85f3a6a3f08ba05e4676fdfe",
+            "b5e7eb95-ac2e-527c-b740-889d09211e03",
+            "5a0e223f34e98308ef620b451817e281b5fb0e97",
+            "af74863d-de0e-55cd-9bbc-a9f0a14ed3ac",
+            "0127402ea83362210ff729e7215efa8553273966"
+          ],
+          "result_sources": [
+            "beijing_guide.md",
+            "xian_guide.md",
+            "beijing_guide.md",
+            "xian_guide.md",
+            "beijing_guide.md"
+          ],
+          "channels": [
+            "lexical",
+            "dense"
+          ],
+          "reranked": false
+        },
+        {
+          "id": "shanghai_citywalk_night",
+          "hit": true,
+          "recall": 1,
+          "mrr": 1,
+          "ndcg": 0.8772153153380494,
+          "forbidden_hits": 3,
+          "latency_ms": 594,
+          "result_ids": [
+            "2af5f7d11da608c71c9aa8776d36ce4f73485f80",
+            "2fcc94af-3c32-56da-912a-60848d112e6a",
+            "7c7d130b-2495-52d1-a577-e96257d2ca9d",
+            "b3ba55b66249966e7e53faad606c69066ea226b0",
+            "af74863d-de0e-55cd-9bbc-a9f0a14ed3ac"
+          ],
+          "result_sources": [
+            "shanghai_guide.md",
+            "xian_guide.md",
+            "xian_guide.md",
+            "shanghai_guide.md",
+            "xian_guide.md"
+          ],
+          "channels": [
+            "lexical",
+            "dense"
+          ],
+          "reranked": false
+        },
+        {
+          "id": "hangzhou_westlake_tea",
+          "hit": true,
+          "recall": 1,
+          "mrr": 1,
+          "ndcg": 0.8772153153380494,
+          "forbidden_hits": 3,
+          "latency_ms": 616,
+          "result_ids": [
+            "1b837edce24ab083aa693c96e82ab52c2d0f8c80",
+            "979e98cb-8c45-5c24-b8a9-58a014ee7a5f",
+            "437fe619-defb-5ded-b31c-5675c2207cd5",
+            "93feda13d8fb4b752cd5855c84e71e736bd0010b",
+            "db2f59e4-3290-5472-8175-a4c268ea5399"
+          ],
+          "result_sources": [
+            "hangzhou_guide.md",
+            "sanya_guide.md",
+            "chengdu_guide.md",
+            "hangzhou_guide.md",
+            "sanya_guide.md"
+          ],
+          "channels": [
+            "lexical",
+            "dense"
+          ],
+          "reranked": false
+        },
+        {
+          "id": "chongqing_food_night",
+          "hit": true,
+          "recall": 1,
+          "mrr": 1,
+          "ndcg": 0.9060254355346824,
+          "forbidden_hits": 3,
+          "latency_ms": 766,
+          "result_ids": [
+            "4cd8bb4f016e98b398eb7b8deaa442c54f10cc42",
+            "cf03eb24-6329-5342-89b8-3cfee3344299",
+            "0aa1974c0d0b3af2700409ecc614bfd41502e4ce",
+            "437fe619-defb-5ded-b31c-5675c2207cd5",
+            "0c5af98b-794e-506b-9392-b60a448bcb81"
+          ],
+          "result_sources": [
+            "chongqing_guide.md",
+            "xian_guide.md",
+            "chongqing_guide.md",
+            "chengdu_guide.md",
+            "xian_guide.md"
+          ],
+          "channels": [
+            "lexical",
+            "dense"
+          ],
+          "reranked": false
+        },
+        {
+          "id": "guilin_landscape_yangshuo",
+          "hit": true,
+          "recall": 1,
+          "mrr": 1,
+          "ndcg": 0.8854598815714875,
+          "forbidden_hits": 2,
+          "latency_ms": 628,
+          "result_ids": [
+            "da8c3111e3b90b9058518eef7cc5d3f8ac95396e",
+            "f2330fe2-cbba-543e-9598-b06de8373749",
+            "0f8840ea369d2e0f7295fa1e1517948e8bafe868",
+            "e084bdd9-0f6f-5265-8c19-ae74024aa609",
+            "24a32a15d052027b40ebf67e71b533bc9336be56"
+          ],
+          "result_sources": [
+            "guilin_guide.md",
+            "dali_guide.md",
+            "guilin_guide.md",
+            "chengdu_guide.md",
+            "guilin_guide.md"
+          ],
+          "channels": [
+            "lexical",
+            "dense"
+          ],
+          "reranked": false
+        }
+      ]
+    },
+    {
+      "name": "hybrid_bge_m3_reranker",
+      "description": "高级 RAG：dense + lexical + RRF + bge reranker",
+      "backend": "hybrid",
+      "qdrant_collection": "travel_guides",
+      "embedding_model": "bge-m3",
+      "embedding_dim": 1024,
+      "reranker_model": "bge-reranker-v2-m3",
+      "reranker_enabled": true,
+      "reranked_cases": 0,
+      "candidate_k": 40,
+      "rrf_k": 60,
+      "query_variants": 3,
+      "cases": 10,
+      "failed_cases": 0,
+      "hit_rate": 1,
+      "average_recall": 1,
+      "average_mrr": 0.95,
+      "average_ndcg": 0.902909877743984,
+      "forbidden_hits": 18,
+      "average_latency_ms": 649.5,
+      "quality_score": 0.6008729633231953,
+      "quality_score_delta": -0.3991270366768046,
+      "average_latency_delta_ms": 636.2,
+      "average_recall_delta": 0,
+      "average_mrr_delta": -0.050000000000000044,
+      "average_ndcg_delta": -0.09709012225601599,
+      "forbidden_hits_delta": 18,
+      "case_reports": [
+        {
+          "id": "xiamen_sunset_food",
+          "hit": true,
+          "recall": 1,
+          "mrr": 0.5,
+          "ndcg": 0.7122630665145961,
+          "forbidden_hits": 2,
+          "latency_ms": 659,
+          "result_ids": [
+            "caa0b3de-8caf-51de-b558-b0dd19946163",
+            "f91c23f0aefb6f764eb7c3ae25ce5c2d769dffdd",
+            "8c52f7686e4c7e6e655604f2bc88e3f2cb91d98e",
+            "cf03eb24-6329-5342-89b8-3cfee3344299",
+            "b8db19e3217768518bf085a0f8c0399e8e355cc6"
+          ],
+          "result_sources": [
+            "sanya_guide.md",
+            "xiamen_guide.md",
+            "xiamen_guide.md",
+            "xian_guide.md",
+            "xiamen_guide.md"
+          ],
+          "channels": [
+            "dense",
+            "lexical"
+          ],
+          "reranked": false
+        },
+        {
+          "id": "dali_old_town_lake",
+          "hit": true,
+          "recall": 1,
+          "mrr": 1,
+          "ndcg": 1,
+          "forbidden_hits": 0,
+          "latency_ms": 610,
+          "result_ids": [
+            "1d28d44318158a5da9543d6deef824d3d16bff41",
+            "7d44926c-5ecc-534f-b15f-add33a8dcd85",
+            "449fe07c-082a-5dee-bb34-8d404a047842",
+            "d7dc21b606fd59724990f924928cec508dc3ee57",
+            "5815da25-a530-52b8-b9ef-d53d9f6fd0eb"
+          ],
+          "result_sources": [
+            "dali_guide.md",
+            "dali_guide.md",
+            "dali_guide.md",
+            "dali_guide.md",
+            "dali_guide.md"
+          ],
+          "channels": [
+            "lexical",
+            "dense"
+          ],
+          "reranked": false
+        },
+        {
+          "id": "chengdu_food_panda",
+          "hit": true,
+          "recall": 1,
+          "mrr": 1,
+          "ndcg": 0.8854598815714875,
+          "forbidden_hits": 2,
+          "latency_ms": 615,
+          "result_ids": [
+            "447e83ecef0378dc864142f84a5a3fd991f4d1ca",
+            "cf03eb24-6329-5342-89b8-3cfee3344299",
+            "b6ddfcec6e08773be30c98b3fa69755a105e821f",
+            "e56e396a-018c-5f14-b6af-549a51f899ba",
+            "b66ba663c1f5919f3c96f371861094b1f31a17ff"
+          ],
+          "result_sources": [
+            "chengdu_guide.md",
+            "xian_guide.md",
+            "chengdu_guide.md",
+            "xian_guide.md",
+            "chengdu_guide.md"
+          ],
+          "channels": [
+            "lexical",
+            "dense"
+          ],
+          "reranked": false
+        },
+        {
+          "id": "sanya_family_beach",
+          "hit": true,
+          "recall": 1,
+          "mrr": 1,
+          "ndcg": 1,
+          "forbidden_hits": 0,
+          "latency_ms": 553,
+          "result_ids": [
+            "b7037a68-d752-57c2-a722-72de5fdb203d",
+            "e28826ace2ce70711def8ba60a78fc22a1f3f79e",
+            "3974f348db9f5e089bfa23d9a14ab675c7e430c1",
+            "979e98cb-8c45-5c24-b8a9-58a014ee7a5f",
+            "c99828fb3bf79f57be86dfd26a737ba0c1591c89"
+          ],
+          "result_sources": [
+            "sanya_guide.md",
+            "sanya_guide.md",
+            "sanya_guide.md",
+            "sanya_guide.md",
+            "sanya_guide.md"
+          ],
+          "channels": [
+            "dense",
+            "lexical"
+          ],
+          "reranked": false
+        },
+        {
+          "id": "xian_history_food",
+          "hit": true,
+          "recall": 1,
+          "mrr": 1,
+          "ndcg": 1,
+          "forbidden_hits": 1,
+          "latency_ms": 584,
+          "result_ids": [
+            "053d93377ff9947f9502ecb3be4a350a9dfaaec7",
+            "0c5af98b-794e-506b-9392-b60a448bcb81",
+            "66b7f6613bd55301fd4bfa10e6fbabb9360ed0e5",
+            "b5e7eb95-ac2e-527c-b740-889d09211e03",
+            "437fe619-defb-5ded-b31c-5675c2207cd5"
+          ],
+          "result_sources": [
+            "xian_guide.md",
+            "xian_guide.md",
+            "xian_guide.md",
+            "xian_guide.md",
+            "chengdu_guide.md"
+          ],
+          "channels": [
+            "lexical",
+            "dense"
+          ],
+          "reranked": false
+        },
+        {
+          "id": "beijing_first_time_history",
+          "hit": true,
+          "recall": 1,
+          "mrr": 1,
+          "ndcg": 0.8854598815714875,
+          "forbidden_hits": 2,
+          "latency_ms": 712,
+          "result_ids": [
+            "312fce17250699de85f3a6a3f08ba05e4676fdfe",
+            "b5e7eb95-ac2e-527c-b740-889d09211e03",
+            "5a0e223f34e98308ef620b451817e281b5fb0e97",
+            "af74863d-de0e-55cd-9bbc-a9f0a14ed3ac",
+            "0127402ea83362210ff729e7215efa8553273966"
+          ],
+          "result_sources": [
+            "beijing_guide.md",
+            "xian_guide.md",
+            "beijing_guide.md",
+            "xian_guide.md",
+            "beijing_guide.md"
+          ],
+          "channels": [
+            "lexical",
+            "dense"
+          ],
+          "reranked": false
+        },
+        {
+          "id": "shanghai_citywalk_night",
+          "hit": true,
+          "recall": 1,
+          "mrr": 1,
+          "ndcg": 0.8772153153380494,
+          "forbidden_hits": 3,
+          "latency_ms": 748,
+          "result_ids": [
+            "2af5f7d11da608c71c9aa8776d36ce4f73485f80",
+            "2fcc94af-3c32-56da-912a-60848d112e6a",
+            "7c7d130b-2495-52d1-a577-e96257d2ca9d",
+            "b3ba55b66249966e7e53faad606c69066ea226b0",
+            "af74863d-de0e-55cd-9bbc-a9f0a14ed3ac"
+          ],
+          "result_sources": [
+            "shanghai_guide.md",
+            "xian_guide.md",
+            "xian_guide.md",
+            "shanghai_guide.md",
+            "xian_guide.md"
+          ],
+          "channels": [
+            "lexical",
+            "dense"
+          ],
+          "reranked": false
+        },
+        {
+          "id": "hangzhou_westlake_tea",
+          "hit": true,
+          "recall": 1,
+          "mrr": 1,
+          "ndcg": 0.8772153153380494,
+          "forbidden_hits": 3,
+          "latency_ms": 692,
+          "result_ids": [
+            "1b837edce24ab083aa693c96e82ab52c2d0f8c80",
+            "979e98cb-8c45-5c24-b8a9-58a014ee7a5f",
+            "437fe619-defb-5ded-b31c-5675c2207cd5",
+            "93feda13d8fb4b752cd5855c84e71e736bd0010b",
+            "db2f59e4-3290-5472-8175-a4c268ea5399"
+          ],
+          "result_sources": [
+            "hangzhou_guide.md",
+            "sanya_guide.md",
+            "chengdu_guide.md",
+            "hangzhou_guide.md",
+            "sanya_guide.md"
+          ],
+          "channels": [
+            "lexical",
+            "dense"
+          ],
+          "reranked": false
+        },
+        {
+          "id": "chongqing_food_night",
+          "hit": true,
+          "recall": 1,
+          "mrr": 1,
+          "ndcg": 0.9060254355346824,
+          "forbidden_hits": 3,
+          "latency_ms": 700,
+          "result_ids": [
+            "4cd8bb4f016e98b398eb7b8deaa442c54f10cc42",
+            "cf03eb24-6329-5342-89b8-3cfee3344299",
+            "0aa1974c0d0b3af2700409ecc614bfd41502e4ce",
+            "437fe619-defb-5ded-b31c-5675c2207cd5",
+            "0c5af98b-794e-506b-9392-b60a448bcb81"
+          ],
+          "result_sources": [
+            "chongqing_guide.md",
+            "xian_guide.md",
+            "chongqing_guide.md",
+            "chengdu_guide.md",
+            "xian_guide.md"
+          ],
+          "channels": [
+            "lexical",
+            "dense"
+          ],
+          "reranked": false
+        },
+        {
+          "id": "guilin_landscape_yangshuo",
+          "hit": true,
+          "recall": 1,
+          "mrr": 1,
+          "ndcg": 0.8854598815714875,
+          "forbidden_hits": 2,
+          "latency_ms": 622,
+          "result_ids": [
+            "da8c3111e3b90b9058518eef7cc5d3f8ac95396e",
+            "f2330fe2-cbba-543e-9598-b06de8373749",
+            "0f8840ea369d2e0f7295fa1e1517948e8bafe868",
+            "e084bdd9-0f6f-5265-8c19-ae74024aa609",
+            "24a32a15d052027b40ebf67e71b533bc9336be56"
+          ],
+          "result_sources": [
+            "guilin_guide.md",
+            "dali_guide.md",
+            "guilin_guide.md",
+            "chengdu_guide.md",
+            "guilin_guide.md"
+          ],
+          "channels": [
+            "lexical",
+            "dense"
+          ],
+          "reranked": false
+        }
+      ]
+    }
+  ],
+  "ranked_by": "quality_score desc, latency asc",
+  "generated_at": "2026-06-08T11:12:24+08:00"
+}

@@ -3,7 +3,7 @@ package services
 import (
 	"time"
 
-	"zhilv-yuntu-go/internal/domain"
+	"travel-agent-go/internal/domain"
 )
 
 // ItineraryAssembler 负责把 PlannerDraft 组装成完整 Itinerary。
@@ -20,6 +20,16 @@ func (a *ItineraryAssembler) Assemble(
 	contexts []string,
 	dayCount int,
 ) domain.Itinerary {
+	return a.AssembleWithEvidence(request, draft, contexts, dayCount, nil)
+}
+
+func (a *ItineraryAssembler) AssembleWithEvidence(
+	request domain.TripRequest,
+	draft PlannerDraft,
+	contexts []string,
+	dayCount int,
+	evidence *domain.EvidenceReport,
+) domain.Itinerary {
 	days := a.buildDays(request, draft, dayCount)
 	itinerary := domain.Itinerary{
 		TripID:          "trip_" + request.Destination + "_" + request.StartDate,
@@ -32,6 +42,11 @@ func (a *ItineraryAssembler) Assemble(
 		SourceNotes: append([]string{
 			"Itinerary is assembled by Go TravelPlanningAgent.",
 		}, firstN(contexts, 2)...),
+		Evidence: evidence,
+	}
+	if evidence != nil {
+		itinerary.SourceNotes = append(itinerary.SourceNotes, evidenceSourceNotes(*evidence)...)
+		itinerary.Tips = append(itinerary.Tips, evidenceRiskTips(*evidence)...)
 	}
 	return refreshBudget(itinerary, request.Budget)
 }

@@ -17,6 +17,8 @@ export interface TripEditPayload {
   user_instruction: string;
   edit_scope?: string | null;
   preserve_constraints: string[];
+  conversation_id?: string | null;
+  messages?: TripEditMessage[];
 }
 
 export interface SpotItem {
@@ -39,6 +41,7 @@ export interface MealItem {
   estimated_cost?: number;
   notes?: string | null;
   location?: string | null;
+  image_url?: string | null;
   address?: string | null;
   latitude?: number | null;
   longitude?: number | null;
@@ -63,6 +66,15 @@ export interface TransportItem {
   duration?: string | null;
   distance_km?: number | null;
   estimated_minutes?: number | null;
+  route_provider?: string | null;
+  route_mode?: string | null;
+  route_status?: string | null;
+  distance_meters?: number;
+  duration_seconds?: number;
+  polyline?: string | null;
+  route_summary?: string | null;
+  route_warning?: string | null;
+  route_taxi_cost?: number;
 }
 
 export interface DayPlan {
@@ -85,6 +97,51 @@ export interface BudgetBreakdown {
   total: number;
 }
 
+export interface EvidenceSource {
+  id: string;
+  title?: string | null;
+  url?: string | null;
+  host?: string | null;
+  source_type?: string | null;
+  verification_role?: string | null;
+  source_priority?: number | null;
+  reliability_label?: string | null;
+  reliability_score: number;
+  published_at?: string | null;
+  retrieved_at?: string | null;
+  snippet?: string | null;
+}
+
+export interface EvidenceClaim {
+  id: string;
+  claim_type: string;
+  name?: string | null;
+  claim: string;
+  status: string;
+  confidence: number;
+  source_ids?: string[];
+  source_urls?: string[];
+  source_types?: string[];
+  requires_review: boolean;
+  risk_level?: string | null;
+  reason?: string | null;
+  verification_status?: string | null;
+  verification_channels?: string[];
+  verification_summary?: string | null;
+  official_source_url?: string | null;
+}
+
+export interface EvidenceReport {
+  destination?: string | null;
+  query?: string | null;
+  generated_at?: string | null;
+  summary?: string[];
+  verification_summary?: string[];
+  sources?: EvidenceSource[];
+  claims?: EvidenceClaim[];
+  warnings?: string[];
+}
+
 export interface Itinerary {
   trip_id: string;
   destination: string;
@@ -94,6 +151,34 @@ export interface Itinerary {
   budget_breakdown: BudgetBreakdown;
   tips: string[];
   source_notes: string[];
+  evidence?: EvidenceReport | null;
+  edit_conversation_id?: string | null;
+  edit_messages?: TripEditMessage[];
+  edit_revisions?: TripEditRevision[];
+  last_change_summary?: string[];
+  edit_issues?: TripEditIssue[];
+}
+
+export interface TripEditMessage {
+  role: "user" | "assistant" | "tool" | string;
+  content: string;
+  created_at?: string | null;
+}
+
+export interface TripEditRevision {
+  revision_id: string;
+  trip_id: string;
+  instruction: string;
+  edit_scope: string;
+  change_summary: string[];
+  created_at: string;
+}
+
+export interface TripEditIssue {
+  code: string;
+  level: string;
+  message: string;
+  day_index?: number;
 }
 
 export interface TripSaveResponse {
@@ -130,6 +215,8 @@ export interface WeatherForecastDay {
   night_temp?: string | null;
   day_wind?: string | null;
   night_wind?: string | null;
+  day_power?: string | null;
+  night_power?: string | null;
 }
 
 export interface WeatherForecastResponse {
@@ -137,5 +224,8 @@ export interface WeatherForecastResponse {
   province?: string | null;
   adcode?: string | null;
   report_time?: string | null;
+  source?: string | null;
+  risks?: string[];
+  advice?: string[];
   days: WeatherForecastDay[];
 }

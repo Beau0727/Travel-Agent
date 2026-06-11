@@ -3,7 +3,7 @@ package validators
 import (
 	"strings"
 
-	"zhilv-yuntu-go/internal/domain"
+	"travel-agent-go/internal/domain"
 )
 
 type PreferenceValidator struct{}
